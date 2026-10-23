@@ -1,0 +1,19 @@
+{
+  "name": "rede-girassol-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API experimental para organizar dados públicos de saúde com foco em fontes oficiais CNES e ANS.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20261001.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.40.0"
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "demo-place-001",
+    "cnes_code": "0000001",
+    "name": "Estabelecimento Demonstrativo Alfa",
+    "city": "Curitiba",
+    "state": "PR",
+    "address": "Endereço fictício",
+    "source": "sample",
+    "source_updated_at": null
+  }
+]
