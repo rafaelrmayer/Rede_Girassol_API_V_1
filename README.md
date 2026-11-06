@@ -1,5 +1,7 @@
 # 🌻 Rede Girassol API
 
+Projeto desenvolvido por **[Rafael Ricardo Mayer](https://github.com/rafaelrmayer)** para organizar informações públicas de saúde em uma API documentada, com integração planejada de fontes oficiais do CNES e da ANS.
+
 **API de dados de saúde com integração planejada de fontes oficiais do CNES e da ANS, transparência e rastreabilidade das informações.**
 
 A **Rede Girassol API** é um projeto independente de tecnologia para organizar e disponibilizar informações públicas sobre estabelecimentos de saúde e, conforme a disponibilidade e a validação das fontes, operadoras e produtos da saúde suplementar brasileira.
@@ -41,24 +43,7 @@ A Rede Girassol API está em fase inicial de desenvolvimento. A estrutura foi pr
 
 ## Arquitetura inicial
 
-```text
-Fontes oficiais (CNES / ANS)
-          |
-          v
-Inspeção, mapeamento e normalização
-          |
-          v
-Importação controlada
-          |
-          v
-Rede Girassol API (Cloudflare Workers)
-          |
-          v
-Cloudflare D1
-          |
-          v
-Aplicações e usuários
-```
+O fluxo proposto parte das fontes oficiais CNES e ANS, passa pela inspeção e normalização dos registros e por uma importação controlada. A API em Cloudflare Workers consulta os dados armazenados no Cloudflare D1 e os disponibiliza às aplicações.
 
 Essa é uma arquitetura inicial. Os formatos brutos dos arquivos oficiais ainda precisam ser inspecionados e mapeados antes de uma importação real confiável.
 
@@ -154,12 +139,6 @@ Pesquisador independente e desenvolvedor de projetos em inteligência artificial
 
 Conheça outros projetos no [perfil do GitHub](https://github.com/rafaelrmayer).
 
-## Palavras-chave
-
-Rede Girassol API, API de saúde, dados abertos de saúde, CNES, Cadastro Nacional de Estabelecimentos de Saúde, ANS, Agência Nacional de Saúde Suplementar, estabelecimentos de saúde, operadoras de planos de saúde, saúde suplementar, integração de dados públicos, API TypeScript, Cloudflare Workers, Cloudflare D1, transparência de dados e tecnologia para a saúde.
-
-As palavras-chave descrevem o escopo do projeto e não significam que todas as integrações já estejam concluídas.
-
 ## Licença
 
 Consulte o arquivo [`LICENSE`](LICENSE) para as condições de uso do código. As condições de reutilização de dados de terceiros devem ser verificadas separadamente.
@@ -168,3 +147,9 @@ Consulte o arquivo [`LICENSE`](LICENSE) para as condições de uso do código. A
 
 **Rede Girassol API** — tecnologia, informação e cuidado.  
 **Rafael Ricardo Mayer** · [GitHub](https://github.com/rafaelrmayer) · [Instagram](https://www.instagram.com/rafael_rmayer/)
+
+## Outros projetos de Rafael Ricardo Mayer
+
+- **[Jornada de Bia](https://github.com/rafaelrmayer/jornada-de-Bia_Sakura_V.1.5)**: Comunicação aumentativa e alternativa (CAA) e tecnologia assistiva.
+- **[Prospecta](https://github.com/rafaelrmayer/Prospecta_V1)**: Protótipo de prospecção comercial local.
+- **[INK Bia Cerisier](https://github.com/rafaelrmayer/ink-bia-cerisier)**: Projeto de plataforma de gestão para tatuadores e estúdios.
