@@ -1,4 +1,4 @@
-export const DASHBOARD_HTML = String.raw\`<!doctype html>
+export const DASHBOARD_HTML = String.raw`<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -515,4 +515,4 @@ export const DASHBOARD_HTML = String.raw\`<!doctype html>
     refreshOverview();
   </script>
 </body>
-</html>\`;
+</html>`;
