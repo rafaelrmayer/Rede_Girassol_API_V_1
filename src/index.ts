@@ -1,3 +1,5 @@
+import { DASHBOARD_HTML } from "./dashboard";
+
 export interface Env {
   DB: D1Database;
   IMPORT_TOKEN?: string;
@@ -33,6 +35,18 @@ export default {
         "access-control-allow-methods": "GET,POST,OPTIONS",
         "access-control-allow-headers": "content-type,authorization"
       }});
+    }
+
+    if (request.method === "GET" && (path === "/" || path === "/dashboard")) {
+      return new Response(DASHBOARD_HTML, {
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store",
+          "x-content-type-options": "nosniff",
+          "referrer-policy": "no-referrer",
+          "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'"
+        }
+      });
     }
 
     if (request.method === "GET" && path === "/health") {
