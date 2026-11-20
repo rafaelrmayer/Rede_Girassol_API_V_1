@@ -87,6 +87,21 @@ rede-girassol-api/
 
 Os endpoints administrativos exigem token. Consulte `src/index.ts` e `wrangler.toml` para verificar a implementação e a configuração atuais. Não coloque segredos no código nem os envie ao GitHub.
 
+## Painel web V0.1
+
+A primeira interface visual é servida pelo próprio Cloudflare Worker:
+
+| Método | Endpoint | Objetivo |
+|---|---|---|
+| `GET` | `/` | Abrir o painel Rede Girassol. |
+| `GET` | `/dashboard` | Abrir o painel pela rota alternativa. |
+
+O painel consulta somente os endpoints da API (`/health`, `/sources`, `/v1/places`, `/v1/operators` e `/v1/plans`). Não importa nem lê os arquivos de demonstração em `fixtures/`.
+
+As telas exibem os registros realmente retornados pelo banco conectado à API. Quando não houver resultados, a interface informa a ausência de registros; em caso de falha, informa que a consulta não pôde ser concluída. As listas respeitam o limite atual de até 100 registros por endpoint e não representam necessariamente o total armazenado.
+
+**Importante:** esta interface é uma entrega de desenvolvimento. A integração real, o mapeamento e a validação das fontes CNES e ANS continuam pendentes. A interface não deve ser implantada em produção antes da revisão técnica, execução dos testes e validação do ambiente.
+
 ## Começar no GitHub Codespaces
 
 É possível desenvolver pelo navegador sem instalar ferramentas no computador institucional, desde que o Codespace disponibilize Node.js e npm.
