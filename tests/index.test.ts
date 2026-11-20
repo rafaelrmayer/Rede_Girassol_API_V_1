@@ -24,6 +24,26 @@ describe("Rede Girassol API", () => {
     expect(response.status).toBe(401);
   });
 
+
+  it("serves the V0.1 dashboard at the root route", async () => {
+    const response = await app.fetch(new Request("https://example.test/"), env);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    const body = await response.text();
+    expect(body).toContain("Rede Girassol");
+    expect(body).toContain("Estabelecimentos");
+    expect(body).toContain("Fontes e transparência");
+    expect(body).toContain("/v1/places");
+  });
+
+  it("does not embed sample fixture records in the dashboard", async () => {
+    const response = await app.fetch(new Request("https://example.test/dashboard"), env);
+    const body = await response.text();
+    expect(body).not.toContain("Estabelecimento Demonstrativo Alfa");
+    expect(body).not.toContain("Operadora Demonstrativa Fictícia");
+    expect(body).toContain("Nenhum registro disponível");
+  });
+
   it("returns 404 for unknown routes", async () => {
     const response = await app.fetch(new Request("https://example.test/unknown"), env);
     expect(response.status).toBe(404);
