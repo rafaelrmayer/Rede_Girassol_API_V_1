@@ -1,0 +1,18 @@
+{
+  "policy": "Somente fontes oficiais que descrevem atendimento a TEA no estabelecimento, com identidade CNES conferida e revisão manual com prazo. A documentação não confirma vagas, atendimento para todas as idades ou acesso imediato.",
+  "entries": [
+    {
+      "cnes_code": "0015466",
+      "establishment_name": "CENTRO DE ESPECIALIDADES MEDICAS ENCANTAR",
+      "url": "https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418",
+      "published_on": "2026-03-30",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "scope": "A Prefeitura descreve atendimento multiprofissional a crianças e adolescentes com TEA no Encantar matriz. Confirme critérios, encaminhamento e disponibilidade com a rede municipal; a informação não cobre a unidade Sul anunciada.",
+      "access_note": "A fonte municipal orienta procurar a unidade de saúde de referência para avaliação e encaminhamento.",
+      "access_source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
+      "access_source_published_on": "2025-04-02",
+      "identity_source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/0015466"
+    }
+  ]
+}

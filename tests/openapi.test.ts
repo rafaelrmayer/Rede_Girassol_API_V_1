@@ -41,6 +41,7 @@ beforeAll(async () => {
 beforeEach(() => {
   sqlite = new DatabaseSync(':memory:');
   sqlite.exec(readFileSync('migrations/0001_initial.sql', 'utf8'));
+  sqlite.exec(readFileSync('migrations/0002_rehabilitation.sql', 'utf8'));
   env = {APP_ENV: 'test', DB: {
     prepare: statement,
     batch: async (items: any[]) => items.map(item => item.execute())
@@ -56,11 +57,11 @@ describe('public OpenAPI contract', () => {
     expect(await response.json()).toEqual(openapi);
     expect(openapi.openapi).toBe('3.0.2');
   });
-  it('contains six unique public GET operations and no administrative credentials', () => {
+  it('contains eight unique public GET operations and no administrative credentials', () => {
     const entries = Object.entries(openapi.paths);
-    expect(entries).toHaveLength(6);
+    expect(entries).toHaveLength(8);
     expect(entries.every(([path, value]) => !path.startsWith('/admin/') && Object.keys(value).join() === 'get')).toBe(true);
-    expect(new Set(entries.map(([, value]) => value.get.operationId)).size).toBe(6);
+    expect(new Set(entries.map(([, value]) => value.get.operationId)).size).toBe(8);
     expect(openapi.security).toEqual([]);
     expect(JSON.stringify(openapi)).not.toContain('IMPORT_TOKEN');
   });
@@ -73,12 +74,25 @@ describe('public OpenAPI contract', () => {
       }
     }
   });
-  it.each(['/health', '/sources', '/v1/places', '/v1/operators', '/v1/plans'])
+  it.each(['/health', '/sources', '/v1/places', '/v1/operators', '/v1/plans', '/v1/rehabilitation', '/v1/autism-support'])
     ('matches the real empty-database response for %s', async path => {
       const result = await get(path);
       expect(result.status).toBe(200);
       validateResponse(path, result.status, result.body);
     });
+  it('validates populated rehabilitation and autism evidence responses', async () => {
+    sqlite.prepare('INSERT INTO establishments (id,cnes_code,name,city,state,source) VALUES (?,?,?,?,?,?)')
+      .run('encantar','0015466','CENTRO DE ESPECIALIDADES MEDICAS ENCANTAR','Curitiba','PR','sample');
+    sqlite.prepare(`INSERT INTO rehabilitation_services
+      (id,establishment_id,service_code,classification_code,classification_description,service_type,reference_month,
+       source_establishment_name,source_city,source_state,source_url)
+      VALUES ('observation','encantar','135','002','002 - INTELECTUAL','PROPRIO','202607','ENCANTAR','CURITIBA','PR','https://dadosabertos.saude.gov.br/dataset/cnes_servicos_especializados')`).run();
+    for (const path of ['/v1/autism-support','/v1/rehabilitation']) {
+      const result = await get(path);
+      expect(result.status).toBe(200);
+      validateResponse(path, result.status, result.body);
+    }
+  });
   it('keeps the spec version aligned with the health endpoint', async () => {
     expect((await get('/health')).body).toMatchObject({version: openapi.info.version});
   });

@@ -15,6 +15,10 @@ O objetivo é facilitar a descoberta de informações úteis por meio de uma API
 
 Acesse a [documentação interativa](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/docs), baixe o [OpenAPI JSON](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/openapi.json) ou consulte o [guia da API](docs/API.md). O arquivo [openapi.json](openapi.json) descreve as consultas públicas para integração e futura importação no RapidAPI.
 
+## Autismo e apoio
+
+O painel oferece uma busca própria para serviços com atendimento a pessoas autistas documentado em fontes oficiais revisadas, com público e orientação de acesso. Há também uma consulta independente de reabilitação CNES por modalidade e competência mensal. Cadastro de reabilitação intelectual não confirma, sozinho, atendimento a TEA. Consulte o [guia de configuração, fontes e importação](docs/REHABILITATION.md).
+
 ## Sobre o projeto
 
 A Rede Girassol API está em fase inicial de desenvolvimento. A estrutura foi preparada para receber dados normalizados de fontes oficiais, expor endpoints de consulta e registrar importações. A integração completa com os arquivos reais do CNES e da ANS ainda precisa ser implementada e validada.

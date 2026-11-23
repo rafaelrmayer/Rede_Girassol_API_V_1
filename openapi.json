@@ -441,6 +441,240 @@
           }
         }
       }
+    },
+    "/v1/autism-support": {
+      "get": {
+        "operationId": "listAutismSupport",
+        "tags": [
+          "Buscar atendimento a pessoas autistas documentado"
+        ],
+        "summary": "Buscar atendimento a pessoas autistas documentado",
+        "description": "Somente CNES com evidência institucional oficial revisada e ainda dentro do prazo de revisão. Não infere TEA de nomes ou reabilitação intelectual. Exibe público e acesso conforme a fonte; não confirma vagas, atendimento atual ou cobertura. A ausência não significa inexistência de atendimento.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial no nome, com espaços externos removidos. Segue a semântica LIKE do SQLite (% e _ são curingas).",
+            "schema": {
+              "type": "string"
+            },
+            "example": "hospital"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial por nome do município, com semântica LIKE do SQLite.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Curitiba"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "UF comparada após remover espaços externos e converter para maiúsculas. Valores sem correspondência retornam lista vazia.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "PR"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página dos registros disponíveis, possivelmente vazia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutismSupportPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Paginação ou filtros inválidos/repetidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/EdgeBlocked"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/rehabilitation": {
+      "get": {
+        "operationId": "listRehabilitation",
+        "tags": [
+          "Consultar serviços de reabilitação cadastrados"
+        ],
+        "summary": "Consultar serviços de reabilitação cadastrados",
+        "description": "Observações mensais CNES do serviço 135. Sem reference_month, retorna a competência mais recente importada por CNES, classificação e tipo. Nome, cidade e UF refletem a observação mensal; current_establishment_name é o nome no perfil do banco, sem garantia de atualidade. Classificação 002 não comprova TEA nem habilitação CER. documented depende de curadoria independente, com data de revisão.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial no nome, com espaços externos removidos. Segue a semântica LIKE do SQLite (% e _ são curingas).",
+            "schema": {
+              "type": "string"
+            },
+            "example": "hospital"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial por nome do município, com semântica LIKE do SQLite.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Curitiba"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "UF comparada após remover espaços externos e converter para maiúsculas. Valores sem correspondência retornam lista vazia.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "PR"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "name": "classification_code",
+            "in": "query",
+            "required": false,
+            "description": "Classificação de três dígitos; 002 = intelectual.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{3}$"
+            }
+          },
+          {
+            "name": "reference_month",
+            "in": "query",
+            "required": false,
+            "description": "Competência histórica AAAAMM; omitir para última importada por combinação.",
+            "schema": {
+              "type": "string",
+              "pattern": "^20[0-9]{2}(0[1-9]|1[0-2])$"
+            }
+          },
+          {
+            "name": "cnes_code",
+            "in": "query",
+            "required": false,
+            "description": "CNES preservando zeros iniciais.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{7}$"
+            }
+          },
+          {
+            "name": "service_type",
+            "in": "query",
+            "required": false,
+            "description": "Tipo cadastrado, por exemplo PROPRIO ou TERCEIRO; não confirma oferta no local.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página dos registros disponíveis, possivelmente vazia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RehabilitationPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Paginação ou filtros inválidos/repetidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/EdgeBlocked"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "description": "Catálogo indisponível; verificar migração e banco.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -879,6 +1113,345 @@
         },
         "required": [
           "error"
+        ]
+      },
+      "AutismEvidence": {
+        "type": "object",
+        "properties": {
+          "cnes_code": {
+            "type": "string"
+          },
+          "establishment_name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "published_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "reviewed_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "review_due_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "access_note": {
+            "type": "string"
+          },
+          "access_source_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "access_source_published_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "identity_source_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "cnes_code",
+          "establishment_name",
+          "url",
+          "published_on",
+          "reviewed_on",
+          "review_due_on",
+          "scope",
+          "access_note",
+          "access_source_url",
+          "access_source_published_on",
+          "identity_source_url"
+        ]
+      },
+      "NullableAutismEvidence": {
+        "type": "object",
+        "properties": {
+          "cnes_code": {
+            "type": "string"
+          },
+          "establishment_name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "published_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "reviewed_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "review_due_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "access_note": {
+            "type": "string"
+          },
+          "access_source_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "access_source_published_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "identity_source_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "cnes_code",
+          "establishment_name",
+          "url",
+          "published_on",
+          "reviewed_on",
+          "review_due_on",
+          "scope",
+          "access_note",
+          "access_source_url",
+          "access_source_published_on",
+          "identity_source_url"
+        ],
+        "nullable": true
+      },
+      "AutismSupportRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": false
+          },
+          "cnes_code": {
+            "type": "string",
+            "nullable": false
+          },
+          "name": {
+            "type": "string",
+            "nullable": false
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "autism_care_verification": {
+            "type": "string",
+            "enum": [
+              "documented"
+            ]
+          },
+          "autism_evidence": {
+            "$ref": "#/components/schemas/AutismEvidence"
+          }
+        },
+        "required": [
+          "id",
+          "cnes_code",
+          "name",
+          "city",
+          "state",
+          "autism_care_verification",
+          "autism_evidence"
+        ]
+      },
+      "RehabilitationRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "establishment_id": {
+            "type": "string"
+          },
+          "cnes_code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "current_establishment_name": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "service_code": {
+            "type": "string"
+          },
+          "classification_code": {
+            "type": "string"
+          },
+          "classification_description": {
+            "type": "string"
+          },
+          "service_type": {
+            "type": "string"
+          },
+          "reference_month": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "imported_at": {
+            "type": "string"
+          },
+          "classification_name": {
+            "type": "string"
+          },
+          "autism_care_verification": {
+            "type": "string",
+            "enum": [
+              "documented",
+              "not_verified"
+            ]
+          },
+          "autism_evidence": {
+            "$ref": "#/components/schemas/NullableAutismEvidence"
+          }
+        },
+        "required": [
+          "id",
+          "establishment_id",
+          "cnes_code",
+          "name",
+          "current_establishment_name",
+          "city",
+          "state",
+          "service_code",
+          "classification_code",
+          "classification_description",
+          "service_type",
+          "reference_month",
+          "source",
+          "source_url",
+          "imported_at",
+          "classification_name",
+          "autism_care_verification",
+          "autism_evidence"
+        ]
+      },
+      "AutismSupportPage": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/AutismSupportRecord"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Quantidade de registros nesta página."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total correspondente aos filtros no banco atual; não é o total do CNES nacional."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "results",
+          "count",
+          "total",
+          "pagination",
+          "note"
+        ]
+      },
+      "RehabilitationPage": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/RehabilitationRecord"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Quantidade de registros nesta página."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total correspondente aos filtros no banco atual; não é o total do CNES nacional."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "note": {
+            "type": "string"
+          },
+          "classifications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "name"
+              ]
+            }
+          },
+          "classification_reference_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "results",
+          "count",
+          "total",
+          "pagination",
+          "note",
+          "classifications",
+          "classification_reference_url"
         ]
       }
     }
