@@ -297,12 +297,12 @@ Se houver falha ou indisponibilidade da fonte oficial, a execução ficará verm
 
 ## Primeira implantação pelo painel Cloudflare
 
-O Worker usa o nome `rede-girassol-api` e o binding D1 `DB`, conforme `wrangler.toml`. O identificador do banco é uma referência de configuração, não uma senha. Para usar outra conta ou banco, substitua esse identificador pelo do D1 correspondente antes de implantar.
+O Worker usa o nome `rede-girassol-api-v-1` e o binding D1 `DB`, conforme `wrangler.toml`. O identificador do banco é uma referência de configuração, não uma senha. Para usar outra conta ou banco, substitua esse identificador pelo do D1 correspondente antes de implantar.
 
 Após criar `rede-girassol-db` e executar a migração `migrations/0001_initial.sql` no console do D1:
 
 1. Abra **Workers e Pages → Criar aplicativo** e conecte o repositório do GitHub na branch `main`.
-2. Use **nome do projeto `rede-girassol-api`**, igual ao nome no `wrangler.toml`.
+2. Use **nome do projeto `rede-girassol-api-v-1`**, igual ao nome no `wrangler.toml`.
 3. No comando de build, informe `npm run typecheck`. O ambiente de build deve instalar as dependências do projeto com Node.js compatível (recomendado: 24).
 4. No comando de implantação, informe `npx wrangler deploy`.
 5. Confirme a implantação depois que a configuração do D1 estiver na branch `main`.
