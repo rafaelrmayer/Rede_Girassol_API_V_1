@@ -920,6 +920,9 @@
             "nullable": true,
             "format": "date",
             "description": "Data de referência informada pela fonte; ausência não implica atualização recente."
+          },
+          "contact": {
+            "$ref": "#/components/schemas/InstitutionalContact"
           }
         },
         "required": [
@@ -1307,6 +1310,9 @@
           },
           "autism_evidence": {
             "$ref": "#/components/schemas/AutismEvidence"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/InstitutionalContact"
           }
         },
         "required": [
@@ -1379,6 +1385,9 @@
           },
           "autism_evidence": {
             "$ref": "#/components/schemas/NullableAutismEvidence"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/InstitutionalContact"
           }
         },
         "required": [
@@ -1588,6 +1597,81 @@
           "notice",
           "documents"
         ]
+      },
+      "InstitutionalContact": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "website": {
+            "type": "string",
+            "nullable": true
+          },
+          "source_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "source_kind": {
+            "type": "string",
+            "nullable": true
+          },
+          "source_updated_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewed_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "review_due_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "published",
+              "not_verified"
+            ]
+          },
+          "phones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "type": "string",
+                  "pattern": "^\\+55[0-9]{10,11}$"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "number",
+                "label"
+              ]
+            }
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "website",
+          "source_url",
+          "source_kind",
+          "source_updated_on",
+          "reviewed_on",
+          "review_due_on",
+          "status",
+          "phones",
+          "note"
+        ],
+        "description": "Contato institucional publicado e conferido documentalmente, não por ligação. source_kind distingue cadastro CNES de página institucional/municipal. Central pode servir a várias unidades. Contato vencido ou ausente retorna not_verified, campos nulos e phones vazio. Não implica WhatsApp nem vagas."
       }
     }
   },

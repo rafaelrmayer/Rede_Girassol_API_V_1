@@ -1,3 +1,4 @@
+import { institutionalContact } from './contacts';
 import registry from '../autism-support-sources.json';
 import { pagination, readPage } from './pagination';
 
@@ -31,6 +32,6 @@ export async function listAutismSupport(params: URLSearchParams, db: D1Database)
   }
   const result = await readPage(db, 'SELECT e.id,e.cnes_code,e.name,e.city,e.state' + from,
     'SELECT COUNT(*) AS total' + from, ' ORDER BY e.name,e.id', values, page, registry.policy);
-  return {status: 200, body: {...result, results: result.results.map(row => ({...row,
+  return {status: 200, body: {...result, results: result.results.map(row => ({...row, contact: institutionalContact(row.cnes_code),
     autism_care_verification: 'documented', autism_evidence: autismEvidence(String(row.cnes_code))}))}};
 }
