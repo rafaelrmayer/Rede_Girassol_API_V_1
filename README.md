@@ -340,3 +340,9 @@ O envio valida o hash do arquivo normalizado contra seus metadados e exige respo
 Os scripts de envio identificam-se como `RedeGirassol-CNES-Importer/0.1` no cabeçalho `User-Agent` e solicitam JSON explicitamente. Na configuração atual do domínio `workers.dev`, o cliente padrão `Python-urllib` recebeu HTTP `403` / erro Cloudflare `1010`, enquanto o cliente identificado chegou à API. Essa identificação não substitui o token administrativo nem altera as regras de acesso.
 
 Após atualizar o código de um workflow, inicie uma **nova execução em Run workflow na `main`** para usar a correção. Reexecutar uma execução antiga usa o commit original daquela execução.
+
+### Lentidão temporária do CNES ou IBGE
+
+A preparação identifica no log o domínio da fonte consultada e tenta cada leitura até três vezes, com timeout de 30 segundos por tentativa e pausas de um e dois segundos. Somente timeouts, falhas de conexão/leitura e HTTP `429`, `500`, `502`, `503` ou `504` recebem novas tentativas. Erros permanentes de acesso, JSON inválido e respostas maiores que o limite interrompem a preparação.
+
+Se a fonte continuar indisponível, a execução termina com o domínio e o motivo resumido do erro, sem avançar ao envio para o banco. Essa repetição vale apenas para as consultas GET das fontes oficiais; o POST de importação continua sem repetição automática. Os dois workflows de CNES usam o mesmo preparador e recebem esse comportamento.

@@ -2,10 +2,14 @@
 """Prepare a bounded CNES sample; never imports or deploys anything."""
 import argparse
 from datetime import date, datetime, timezone
+from http.client import IncompleteRead
 import hashlib
 import json
 from pathlib import Path
 import re
+import sys
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -87,12 +91,30 @@ def normalize(payload, municipalities):
 
 
 def download(url):
+    source = urllib.parse.urlparse(url).hostname or 'fonte oficial'
     req = urllib.request.Request(url, headers={'Accept': 'application/json', 'User-Agent': 'RedeGirassol-development/0.1'})
-    with urllib.request.urlopen(req, timeout=30) as response:
-        content = response.read(5 * 1024 * 1024 + 1)
-    if len(content) > 5 * 1024 * 1024:
-        raise ValueError('Resposta excedeu 5 MiB')
-    return json.loads(content)
+    for attempt in range(1, 4):
+        print(f'Consultando {source}: tentativa {attempt}/3.', file=sys.stderr, flush=True)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                content = response.read(5 * 1024 * 1024 + 1)
+            if len(content) > 5 * 1024 * 1024:
+                raise ValueError(f'{source}: resposta excedeu 5 MiB')
+            try:
+                return json.loads(content)
+            except (ValueError, UnicodeError) as exc:
+                raise ValueError(f'{source}: resposta não contém JSON válido') from exc
+        except urllib.error.HTTPError as exc:
+            status = exc.code
+            exc.close()
+            if status not in {429, 500, 502, 503, 504}:
+                raise ValueError(f'{source}: HTTP {status}; consulta interrompida') from exc
+            reason = f'HTTP {status}'
+        except (urllib.error.URLError, TimeoutError, ConnectionError, IncompleteRead):
+            reason = 'timeout ou falha de conexão/leitura'
+        if attempt == 3:
+            raise ValueError(f'{source}: consulta falhou após 3 tentativas ({reason}). Nenhum lote preparado nesta execução foi enviado ao banco.')
+        time.sleep(attempt)
 
 
 def digest(payload):
