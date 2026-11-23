@@ -8,13 +8,19 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        npm-version: ['10.9.2', '11.9.0']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
-      - run: npm ci
+      - name: Instalar com npm ${{ matrix.npm-version }}
+        env:
+          NPM_VERSION: ${{ matrix.npm-version }}
+        run: npm exec --yes --package="npm@$NPM_VERSION" -- npm ci
       - run: npm test
       - run: npm run test:cnes
       - run: npm run typecheck
