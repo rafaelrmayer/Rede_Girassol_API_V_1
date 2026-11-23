@@ -11,6 +11,10 @@ O objetivo é facilitar a descoberta de informações úteis por meio de uma API
 > **Tecnologia, informação e cuidado.**  
 > *Rumo à utopia e ao horizonte.* 🌻
 
+## Documentação das consultas
+
+Acesse a [documentação interativa](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/docs), baixe o [OpenAPI JSON](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/openapi.json) ou consulte o [guia da API](docs/API.md). O arquivo [openapi.json](openapi.json) descreve as consultas públicas para integração e futura importação no RapidAPI.
+
 ## Sobre o projeto
 
 A Rede Girassol API está em fase inicial de desenvolvimento. A estrutura foi preparada para receber dados normalizados de fontes oficiais, expor endpoints de consulta e registrar importações. A integração completa com os arquivos reais do CNES e da ANS ainda precisa ser implementada e validada.
