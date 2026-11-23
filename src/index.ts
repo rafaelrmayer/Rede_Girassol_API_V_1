@@ -1,3 +1,4 @@
+import { importPlaces } from "./import";
 import { DASHBOARD_HTML } from "./dashboard";
 
 export interface Env {
@@ -65,16 +66,8 @@ export default {
     if (path.startsWith("/admin/")) {
       if (!authorized(request, env)) return json({ error: "unauthorized", message: "Token administrativo ausente ou inválido." }, 401);
       if (request.method === "POST" && path === "/admin/import") {
-        let payload: any;
-        try { payload = await request.json(); } catch { return json({ error: "invalid_json" }, 400); }
-        const source = typeof payload?.source === "string" ? payload.source : "unknown";
-        const records = Array.isArray(payload?.records) ? payload.records : [];
-        if (records.length > 100) return json({ error: "batch_too_large", max_records: 100 }, 413);
-        const id = crypto.randomUUID();
-        await env.DB.prepare(
-          "INSERT INTO import_runs (id, source, status, records_received, details) VALUES (?, ?, ?, ?, ?)"
-        ).bind(id, source, "received", records.length, "Recebido; mapeamento e validação específicos por fonte ainda necessários.").run();
-        return json({ import_id: id, source, records_received: records.length, status: "received", note: "Este endpoint registra o lote; a persistência dos registros normalizados por tipo de entidade deve ser implementada e testada antes de uso operacional." }, 202);
+        const result = await importPlaces(request, env.DB);
+        return json(result.body, result.status);
       }
       if (request.method === "GET" && path === "/admin/imports") {
         const result = await env.DB.prepare("SELECT * FROM import_runs ORDER BY started_at DESC LIMIT 100").all();

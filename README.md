@@ -168,3 +168,55 @@ Consulte o arquivo [`LICENSE`](LICENSE) para as condições de uso do código. A
 - **[Jornada de Bia](https://github.com/rafaelrmayer/jornada-de-Bia_Sakura_V.1.5)**: Comunicação aumentativa e alternativa (CAA) e tecnologia assistiva.
 - **[Prospecta](https://github.com/rafaelrmayer/Prospecta_V1)**: Protótipo de prospecção comercial local.
 - **[INK Bia Cerisier](https://github.com/rafaelrmayer/ink-bia-cerisier)**: Projeto de plataforma de gestão para tatuadores e estúdios.
+
+## Importação funcional de estabelecimentos normalizados
+
+Esta entrega grava estabelecimentos no D1 e permite consultá-los no painel. A importação de operadoras/produtos ANS e a transformação dos arquivos oficiais continuam pendentes. `source` identifica a origem **declarada pelo importador**, sem atestar autenticidade.
+
+Use Node.js 22.13 ou superior (recomendado: Node.js 24). O lockfile fixa as dependências para instalações reproduzíveis:
+
+```bash
+npm ci
+npm test
+npm run typecheck
+cp .dev.vars.example .dev.vars
+npx wrangler d1 migrations apply rede-girassol-db --local
+npm run dev
+```
+
+Troque o token de exemplo em `.dev.vars` por um valor local. Para enviar o exemplo fictício, configure `IMPORT_TOKEN` no ambiente do terminal com o mesmo valor e execute:
+
+```bash
+python3 scripts/import_records.py --file fixtures/cnes_sample.json --source sample
+```
+
+O script lê `IMPORT_TOKEN` do ambiente; não coloque credenciais em comandos compartilhados ou commits. `.dev.vars` e arquivos locais de ambiente são ignorados pelo Git. O banco local é separado do D1 remoto; esses comandos não publicam o Worker.
+
+Contrato de `POST /admin/import` (Bearer administrativo obrigatório):
+
+```json
+{
+  "entity": "establishments",
+  "source": "manual",
+  "records": [{
+    "cnes_code": "0000001",
+    "name": "Unidade fictícia",
+    "city": "Curitiba",
+    "state": "PR",
+    "address": null,
+    "source_updated_at": "2026-11-23"
+  }]
+}
+```
+
+- `entity` pode ser omitido por compatibilidade; quando informado, deve ser `establishments`.
+- Origens aceitas: `cnes`, `manual` e `sample`. O exemplo em `fixtures/` deve usar `sample`. ANS é recusada nesta etapa.
+- CNES obrigatório como texto de sete números, preservando zeros iniciais; nome obrigatório, até 300 caracteres. Município até 150, endereço até 500, UF brasileira válida e data real no formato `AAAA-MM-DD`. Campos opcionais ausentes ou `null` ficam vazios.
+- `id` legado é aceito, mas a identidade é determinada pelo CNES: novos registros recebem `cnes-{código}` e atualizações preservam o ID existente. O campo `source` dentro de um registro, quando presente, deve coincidir com o lote.
+- De 1 a 100 registros, corpo até 256 KiB. Campos desconhecidos, CNES repetido no lote e dados inválidos são recusados com `422`; JSON inválido retorna `400`; limites excedidos retornam `413`.
+- Todos os registros são validados antes da gravação. O lote e seu histórico são gravados em uma única transação D1. Falha na gravação retorna `500` e desfaz o lote inteiro.
+- Sucesso retorna `200`, `status: completed`, `import_id` e contagens. `records_imported` conta registros processados (inseridos ou atualizados), e não somente novos cadastros. Reenviar o mesmo CNES atualiza os campos sem duplicar o estabelecimento; campos opcionais omitidos também são apagados. Cada envio bem-sucedido gera uma entrada no histórico.
+
+Confira `GET /v1/places?city=Curitiba&state=PR`, `GET /v1/places/0000001` e `GET /admin/imports`. Nenhuma associação a planos é criada pela importação. A existência no CNES continua sem comprovar rede credenciada.
+
+Os testes usam a migração real e SQLite em memória para validar persistência, consultas, atualização, validação, autorização e rollback. A checagem TypeScript ignora declarações de bibliotecas externas (`skipLibCheck`) porque Vitest/Node e Workers declaram globais sobrepostos; o código do projeto permanece com verificação estrita.
