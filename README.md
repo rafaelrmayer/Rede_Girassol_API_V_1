@@ -277,3 +277,20 @@ npm run test:cnes
 ```
 
 Os testes Python usam dados fictícios com os nomes de campos observados na API, sem depender de acesso à internet. Verificam zeros iniciais, UF/município, campos ausentes, datas, duplicação e preparação offline com metadados. As verificações do GitHub executam esses testes junto dos testes TypeScript.
+
+## Preparar a amostra pelo navegador (sem Codespaces ou terminal)
+
+Use a ação manual **Preparar amostra CNES** no GitHub:
+
+1. Abra [Actions → Preparar amostra CNES](https://github.com/rafaelrmayer/Rede_Girassol_API_V_1/actions/workflows/cnes-sample.yml).
+2. Clique em **Run workflow**, mantendo a branch `main`.
+3. Para começar com Curitiba, mantenha **UF `41`**, **município `410690`** e **quantidade `3`**.
+4. Clique no botão verde **Run workflow** e abra a execução criada.
+5. Quando terminar verde, na página de resumo da execução, encontre **Artifacts** e baixe **cnes-amostra-…**.
+6. Extraia o ZIP: `cnes-amostra.json` contém os estabelecimentos; `cnes-amostra.json.metadata.json` registra as fontes e os hashes.
+
+O workflow aparece para execução manual depois que este arquivo estiver na branch principal. É necessário entrar no GitHub com permissão de escrita no repositório para dispará-lo. Se a execução ainda não aparecer na lista, atualize a página.
+
+A ação roda os testes Python do conversor, consulta CNES e IBGE, valida e normaliza a amostra e disponibiliza os dois arquivos por **7 dias**. Os valores são validados pelo preparador: UF válida, município de seis dígitos correspondente à UF e quantidade de 1 a 20. Não exige tokens administrativos nem credenciais do Cloudflare. Não importa os dados em banco, não cria commits e não publica o Worker.
+
+Se houver falha ou indisponibilidade da fonte oficial, a execução ficará vermelha; abra a etapa **Buscar e preparar amostra oficial** para conferir a mensagem. Corrija os filtros, se necessário, ou tente novamente mais tarde. Um arquivo só é publicado como artifact após a preparação bem-sucedida.

@@ -1,0 +1,80 @@
+name: Preparar amostra CNES
+
+on:
+  workflow_dispatch:
+    inputs:
+      state_code:
+        description: 'Código IBGE da UF (Paraná: 41)'
+        required: true
+        default: '41'
+        type: string
+      municipality:
+        description: 'Código CNES do município, com 6 dígitos (Curitiba: 410690)'
+        required: true
+        default: '410690'
+        type: string
+      limit:
+        description: 'Quantidade de estabelecimentos (1 a 20)'
+        required: true
+        default: '3'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Gerar e validar arquivos
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Testar o conversor
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+
+      - name: Buscar e preparar amostra oficial
+        env:
+          CNES_STATE_CODE: ${{ inputs.state_code }}
+          CNES_MUNICIPALITY: ${{ inputs.municipality }}
+          CNES_LIMIT: ${{ inputs.limit }}
+        run: |
+          python3 scripts/prepare_cnes_sample.py \
+            --state-code "$CNES_STATE_CODE" \
+            --municipality "$CNES_MUNICIPALITY" \
+            --limit "$CNES_LIMIT" \
+            --output data/cnes-amostra.json
+
+      - name: Disponibilizar arquivos para baixar
+        uses: actions/upload-artifact@v4
+        with:
+          name: cnes-amostra-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/cnes-amostra.json
+            data/cnes-amostra.json.metadata.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Exibir resumo
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          payload = json.loads(Path('data/cnes-amostra.json').read_text(encoding='utf-8'))
+          count = len(payload['records'])
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('## Amostra CNES pronta para baixar\n\n')
+              summary.write(f'**{count} estabelecimento(s)** convertido(s) e validado(s).\n\n')
+              summary.write('Abra **Artifacts** nesta execução e baixe o pacote **cnes-amostra-…**.\n\n')
+              summary.write('- `cnes-amostra.json`: registros normalizados para conferência.\n')
+              summary.write('- `cnes-amostra.json.metadata.json`: fontes, horário e hashes.\n\n')
+              summary.write('Os arquivos ficam disponíveis por **7 dias**. Guarde uma cópia se necessário.\n\n')
+              summary.write('Esta execução apenas prepara arquivos. Nenhum banco foi alterado e nenhum deploy foi realizado.\n')
+          PY
