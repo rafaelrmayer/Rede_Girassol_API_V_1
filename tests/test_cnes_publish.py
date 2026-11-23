@@ -9,7 +9,7 @@ import urllib.error
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 from prepare_cnes_sample import digest
-from publish_cnes_sample import NoRedirect, publish
+from publish_cnes_sample import NoRedirect, USER_AGENT, publish
 
 
 def response(body, status=200):
@@ -35,6 +35,9 @@ class PublishTests(unittest.TestCase):
         post, get = [call.args[0] for call in self.opener.open.call_args_list]
         self.assertEqual(post.get_header('Authorization'), 'Bearer test-only')
         self.assertIsNone(get.get_header('Authorization'))
+        for request in (post, get):
+            self.assertEqual(request.get_header('User-agent'), USER_AGENT)
+            self.assertEqual(request.get_header('Accept'), 'application/json')
         self.assertEqual(json.loads(post.data), self.payload)
         self.assertTrue(get.full_url.endswith('/v1/places/0000123'))
         self.assertNotIn('test-only', json.dumps(receipt))

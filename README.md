@@ -334,3 +334,9 @@ O token não é a senha da conta Cloudflare, não é uma chave da API do Cloudfl
 O envio valida o hash do arquivo normalizado contra seus metadados e exige resposta de lote concluído. Em seguida, consulta cada CNES pela rota pública e compara os campos enviados. O token é utilizado somente no POST administrativo, sem seguir redirecionamentos; as consultas públicas não levam esse segredo. Execuções de importação são serializadas para evitar concorrência entre esses workflows.
 
 **Falhas:** HTTP `401` indica token ausente/incompatível ou configuração ainda não implantada. HTTP `403` pode indicar bloqueio de acesso pelo Cloudflare. Erro de conexão, timeout ou divergência depois do envio exige conferir o painel e o histórico: a gravação pode ter ocorrido mesmo que a conferência tenha falhado. Não há repetição automática nem rollback da gravação após uma falha na consulta pública. Reenviar os mesmos CNES atualiza os registros sem duplicá-los e cria outra entrada no histórico. A ação de apenas **Preparar amostra CNES** permanece disponível para baixar arquivos sem escrever no banco.
+
+### Identificação do cliente na importação
+
+Os scripts de envio identificam-se como `RedeGirassol-CNES-Importer/0.1` no cabeçalho `User-Agent` e solicitam JSON explicitamente. Na configuração atual do domínio `workers.dev`, o cliente padrão `Python-urllib` recebeu HTTP `403` / erro Cloudflare `1010`, enquanto o cliente identificado chegou à API. Essa identificação não substitui o token administrativo nem altera as regras de acesso.
+
+Após atualizar o código de um workflow, inicie uma **nova execução em Run workflow na `main`** para usar a correção. Reexecutar uma execução antiga usa o commit original daquela execução.
