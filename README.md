@@ -15,6 +15,10 @@ O objetivo é facilitar a descoberta de informações úteis por meio de uma API
 
 Acesse a [documentação interativa](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/docs), baixe o [OpenAPI JSON](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/openapi.json) ou consulte o [guia da API](docs/API.md). O arquivo [openapi.json](openapi.json) descreve as consultas públicas para integração e futura importação no RapidAPI.
 
+## Preparação para o RapidAPI
+
+O [pacote de sete consultas do piloto](rapidapi.openapi.json) deixa as rotas ANS pendentes fora da primeira listagem. Consulte o [roteiro de configuração e pendências](docs/RAPIDAPI.md). A publicação no marketplace ainda não foi realizada. Os menus de Operadoras e Planos ficam fora do painel até a importação de dados reais; suas rotas permanecem disponíveis na API canônica.
+
 ## Contatos institucionais
 
 O painel e a API exibem telefones publicados, com botão para ligar, além de e-mail/site quando conferidos. Indicam central administrativa, procedência e data de revisão. Contato cadastrado no CNES é identificado separadamente; linha ativa e vagas precisam ser confirmadas. Veja o [guia dos contatos](docs/CONTACTS.md).
