@@ -1,3 +1,4 @@
+import { pagination, readPage } from "./pagination";
 import { importPlaces } from "./import";
 import { DASHBOARD_HTML } from "./dashboard";
 
@@ -57,7 +58,7 @@ export default {
     if (request.method === "GET" && path === "/sources") {
       return json({
         sources: [
-          { id: "cnes", name: "Cadastro Nacional de Estabelecimentos de Saúde", url: "https://dadosabertos.saude.gov.br/dataset/cnes-cadastro-nacional-de-estabelecimentos-de-saude", integration_status: "mapping_pending" },
+          { id: "cnes", name: "Cadastro Nacional de Estabelecimentos de Saúde", url: "https://dadosabertos.saude.gov.br/dataset/cnes-cadastro-nacional-de-estabelecimentos-de-saude", integration_status: "partial", scope: "Carga manual e limitada de estabelecimentos; cobertura nacional e atualização automática ainda não implementadas." },
           { id: "ans", name: "Agência Nacional de Saúde Suplementar", url: "https://www.gov.br/ans/pt-br/acesso-a-informacao/perfil-do-setor/dados-abertos-1", integration_status: "mapping_pending" }
         ]
       });
@@ -77,6 +78,8 @@ export default {
     }
 
     if (request.method === "GET" && path === "/v1/places") {
+      const page = pagination(url.searchParams);
+      if (!page) return json({error: "invalid_pagination", message: "Use limit inteiro de 1 a 100 e offset inteiro não negativo, sem repetir parâmetros."}, 400);
       const q = (url.searchParams.get("q") ?? "").trim();
       const city = (url.searchParams.get("city") ?? "").trim();
       const state = (url.searchParams.get("state") ?? "").trim().toUpperCase();
@@ -85,9 +88,9 @@ export default {
       if (q) { stmt += " AND name LIKE ?"; params.push(`%${q}%`); }
       if (city) { stmt += " AND city LIKE ?"; params.push(`%${city}%`); }
       if (state) { stmt += " AND state = ?"; params.push(state); }
-      stmt += " ORDER BY name LIMIT 100";
-      const result = await env.DB.prepare(stmt).bind(...params).all();
-      return json({ results: result.results ?? [], count: result.results?.length ?? 0, note: "A consulta reflete somente os dados presentes na base." });
+      const count = "SELECT COUNT(*) AS total" + stmt.slice(stmt.indexOf(" FROM"));
+      return json(await readPage(env.DB, stmt, count, " ORDER BY name, id", params, page,
+        "A consulta reflete somente os dados presentes na base."));
     }
 
     const placeMatch = path.match(/^\/v1\/places\/([^/]+)$/);
@@ -97,19 +100,22 @@ export default {
     }
 
     if (request.method === "GET" && path === "/v1/operators") {
+      const page = pagination(url.searchParams);
+      if (!page) return json({error: "invalid_pagination", message: "Use limit inteiro de 1 a 100 e offset inteiro não negativo, sem repetir parâmetros."}, 400);
       const q = (url.searchParams.get("q") ?? "").trim();
-      const result = await env.DB.prepare(
-        "SELECT id, ans_code, name, status, source_updated_at FROM operators WHERE name LIKE ? ORDER BY name LIMIT 100"
-      ).bind(`%${q}%`).all();
-      return json({ results: result.results ?? [], count: result.results?.length ?? 0 });
+      return json(await readPage(env.DB,
+        "SELECT id, ans_code, name, status, source_updated_at FROM operators WHERE name LIKE ?",
+        "SELECT COUNT(*) AS total FROM operators WHERE name LIKE ?", " ORDER BY name, id", [`%${q}%`], page));
     }
 
     if (request.method === "GET" && path === "/v1/plans") {
+      const page = pagination(url.searchParams);
+      if (!page) return json({error: "invalid_pagination", message: "Use limit inteiro de 1 a 100 e offset inteiro não negativo, sem repetir parâmetros."}, 400);
       const q = (url.searchParams.get("q") ?? "").trim();
-      const result = await env.DB.prepare(
-        "SELECT p.id, p.name, p.registration_code, p.status, o.name AS operator_name FROM products p LEFT JOIN operators o ON o.id = p.operator_id WHERE p.name LIKE ? ORDER BY p.name LIMIT 100"
-      ).bind(`%${q}%`).all();
-      return json({ results: result.results ?? [], count: result.results?.length ?? 0, note: "A presença de um produto não comprova rede credenciada atual." });
+      return json(await readPage(env.DB,
+        "SELECT p.id, p.name, p.registration_code, p.status, o.name AS operator_name FROM products p LEFT JOIN operators o ON o.id = p.operator_id WHERE p.name LIKE ?",
+        "SELECT COUNT(*) AS total FROM products p WHERE p.name LIKE ?", " ORDER BY p.name, p.id", [`%${q}%`], page,
+        "A presença de um produto não comprova rede credenciada atual."));
     }
 
     return json({ error: "not_found", path }, 404);

@@ -62,14 +62,21 @@ export async function importPlaces(request: Request, db: D1Database): Promise<{s
   });
   if (errors.length) return {status: 422, body: {error: 'invalid_records', errors}};
   const id = crypto.randomUUID();
-  const statements = records.map(record => {
-    const r = record!;
-    return db.prepare(`INSERT INTO establishments (id,cnes_code,name,city,state,address,source,source_updated_at)
-      VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(cnes_code) DO UPDATE SET
+  const statements: D1PreparedStatement[] = [];
+  // Ten rows per statement: 80 parameters, below D1's per-statement limit.
+  // A 100-row import uses 11 statements including history in one atomic batch.
+  for (let start = 0; start < records.length; start += 10) {
+    const chunk = records.slice(start, start + 10);
+    const placeholders = chunk.map(() => '(?,?,?,?,?,?,?,?)').join(',');
+    const values = chunk.flatMap(record => {
+      const r = record!;
+      return [`cnes-${r.cnes}`, r.cnes, r.name, r.city, r.state, r.address, source, r.updated];
+    });
+    statements.push(db.prepare(`INSERT INTO establishments (id,cnes_code,name,city,state,address,source,source_updated_at)
+      VALUES ${placeholders} ON CONFLICT(cnes_code) DO UPDATE SET
       name=excluded.name,city=excluded.city,state=excluded.state,address=excluded.address,
-      source=excluded.source,source_updated_at=excluded.source_updated_at,imported_at=CURRENT_TIMESTAMP`)
-      .bind(`cnes-${r.cnes}`, r.cnes, r.name, r.city, r.state, r.address, source, r.updated);
-  });
+      source=excluded.source,source_updated_at=excluded.source_updated_at,imported_at=CURRENT_TIMESTAMP`).bind(...values));
+  }
   statements.push(db.prepare(`INSERT INTO import_runs (id,source,status,records_received,records_imported,completed_at,details)
     VALUES (?,?,'completed',?,?,CURRENT_TIMESTAMP,?)`).bind(id, source, records.length, records.length,
       'Estabelecimentos normalizados gravados por CNES; origem declarada pelo importador, sem confirmação de rede credenciada.'));

@@ -57,7 +57,7 @@ class CNESMappingTests(unittest.TestCase):
             normalize({'estabelecimentos': [self.row, self.row]}, self.cities)
 
     def test_rejects_missing_or_oversized_envelope(self):
-        for payload in [[], {}, {'estabelecimentos': []}, {'estabelecimentos': [self.row] * 21}]:
+        for payload in [[], {}, {'estabelecimentos': []}, {'estabelecimentos': [self.row] * 101}]:
             with self.subTest(payload=type(payload).__name__), self.assertRaises(ValueError):
                 normalize(payload, self.cities)
 

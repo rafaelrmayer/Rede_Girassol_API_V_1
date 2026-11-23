@@ -17,6 +17,7 @@ describe("Rede Girassol API", () => {
     const body = await response.json() as any;
     expect(response.status).toBe(200);
     expect(body.sources.map((source: any) => source.id)).toEqual(["cnes", "ans"]);
+    expect(body.sources[0]).toMatchObject({integration_status: "partial", scope: expect.any(String)});
   });
 
   it("protects administrative routes when no token is configured", async () => {
