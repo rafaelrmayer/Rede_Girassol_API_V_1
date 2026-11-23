@@ -2,8 +2,7 @@
 """Send a batch of already-normalized JSON records to the Rede Girassol API.
 
 This script does not download or parse the raw CNES/ANS files. Inspect and map
-official source fields before using it. The API endpoint currently records
-import batches; entity-specific persistence is still a development task.
+official source fields before using it. This delivery imports establishments only.
 """
 import argparse
 import json
@@ -15,7 +14,7 @@ import urllib.request
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file", required=True, help="JSON file with a top-level list or {'records': [...]}")
-    parser.add_argument("--source", required=True, choices=["cnes", "ans", "manual"])
+    parser.add_argument("--source", required=True, choices=["cnes", "manual", "sample"])
     parser.add_argument("--api-url", default=os.environ.get("API_URL", "http://127.0.0.1:8787"))
     parser.add_argument("--token", default=os.environ.get("IMPORT_TOKEN"))
     args = parser.parse_args()
@@ -28,10 +27,10 @@ def main():
     records = payload if isinstance(payload, list) else payload.get("records", [])
     if not isinstance(records, list):
         parser.error("JSON must be a list or contain a 'records' list.")
-    if len(records) > 100:
-        parser.error("Maximum 100 records per request.")
+    if not 1 <= len(records) <= 100:
+        parser.error("Provide between 1 and 100 records per request.")
 
-    body = json.dumps({"source": args.source, "records": records}).encode("utf-8")
+    body = json.dumps({"source": args.source, "entity": "establishments", "records": records}).encode("utf-8")
     request = urllib.request.Request(
         args.api_url.rstrip("/") + "/admin/import",
         data=body,

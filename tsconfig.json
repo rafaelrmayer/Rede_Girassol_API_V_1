@@ -11,7 +11,8 @@
       "@cloudflare/workers-types",
       "vitest/globals"
     ],
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts",
