@@ -1,0 +1,94 @@
+name: Importar amostra CNES na API
+
+on:
+  workflow_dispatch:
+    inputs:
+      state_code:
+        description: 'Código IBGE da UF (Paraná: 41)'
+        required: true
+        default: '41'
+        type: string
+      municipality:
+        description: 'Código CNES do município (Curitiba: 410690)'
+        required: true
+        default: '410690'
+        type: string
+      limit:
+        description: 'Quantidade a gravar no banco (1 a 20)'
+        required: true
+        default: '3'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cnes-import-production
+  cancel-in-progress: false
+
+jobs:
+  import:
+    name: Importar e conferir no banco remoto
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Conferir configuração do token
+        env:
+          IMPORT_TOKEN: ${{ secrets.REDE_GIRASSOL_IMPORT_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import os
+          if not os.environ.get('IMPORT_TOKEN', '').strip():
+              raise SystemExit('Configure o secret REDE_GIRASSOL_IMPORT_TOKEN antes de executar.')
+          PY
+      - name: Testar conversão e envio
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Preparar nova amostra oficial
+        env:
+          CNES_STATE_CODE: ${{ inputs.state_code }}
+          CNES_MUNICIPALITY: ${{ inputs.municipality }}
+          CNES_LIMIT: ${{ inputs.limit }}
+        run: |
+          python3 scripts/prepare_cnes_sample.py \
+            --state-code "$CNES_STATE_CODE" \
+            --municipality "$CNES_MUNICIPALITY" \
+            --limit "$CNES_LIMIT" \
+            --output data/cnes-amostra.json
+      - name: Gravar na API e conferir cada estabelecimento
+        env:
+          IMPORT_TOKEN: ${{ secrets.REDE_GIRASSOL_IMPORT_TOKEN }}
+        run: |
+          python3 scripts/publish_cnes_sample.py \
+            --file data/cnes-amostra.json \
+            --metadata data/cnes-amostra.json.metadata.json \
+            --output data/cnes-importacao.json
+      - name: Guardar amostra e comprovante
+        uses: actions/upload-artifact@v4
+        with:
+          name: cnes-importacao-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/cnes-amostra.json
+            data/cnes-amostra.json.metadata.json
+            data/cnes-importacao.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Exibir resultado
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          receipt = json.loads(Path('data/cnes-importacao.json').read_text(encoding='utf-8'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('## Importação CNES concluída\n\n')
+              summary.write(f'**{receipt["records_imported"]} estabelecimento(s) gravado(s)** e **{receipt["records_verified"]} conferido(s)** pela API pública.\n\n')
+              summary.write('Abra o [painel da Rede Girassol](https://rede-girassol-api-v-1.rafael10mayer.workers.dev) e clique em **Atualizar**.\n\n')
+              summary.write('Amostra, metadados e comprovante estão em **Artifacts**, disponíveis por **7 dias**.\n')
+          PY

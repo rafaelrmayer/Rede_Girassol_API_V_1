@@ -309,3 +309,28 @@ Após criar `rede-girassol-db` e executar a migração `migrations/0001_initial.
 6. Ao concluir, abra a URL `workers.dev` exibida pelo Cloudflare e confira `/health` e `/v1/places`.
 
 O primeiro painel pode estar vazio: gerar e baixar o artifact CNES não importa os registros no D1 remoto. As rotas administrativas ficam bloqueadas enquanto `IMPORT_TOKEN` não estiver configurado como segredo no Worker. Esse token não deve ser colocado no repositório nem enviado no chat. A implantação aplica o binding do banco, mas não executa migrações automaticamente.
+
+## Importar a amostra no banco remoto pelo GitHub Actions
+
+A ação manual **Importar amostra CNES na API** prepara uma **nova amostra** na fonte oficial durante a execução e grava os registros na API `https://rede-girassol-api-v-1.rafael10mayer.workers.dev`. Ela não usa o ZIP baixado anteriormente. O arquivo enviado, os metadados e um comprovante da conferência ficam disponíveis em **Artifacts** por sete dias.
+
+### Configurar o token uma única vez
+
+1. Gere uma senha aleatória longa em um gerenciador de senhas (por exemplo, 32 caracteres ou mais). Ela será o token administrativo da importação.
+2. No Cloudflare, abra o Worker **rede-girassol-api-v-1 → Configurações → Variáveis e segredos**, em **Produção**. Adicione **`IMPORT_TOKEN`** com tipo **Segredo / Secret**, cole o valor gerado e salve/implante a alteração.
+3. No repositório GitHub, abra **Settings → Secrets and variables → Actions → New repository secret**.
+4. No nome, informe **`REDE_GIRASSOL_IMPORT_TOKEN`**; no valor, coloque **exatamente o mesmo token** do Worker.
+
+O token não é a senha da conta Cloudflare, não é uma chave da API do Cloudflare e não é a URL da API. Não coloque o valor em código, inputs do workflow ou mensagens de chat. O workflow não precisa de credenciais diretas do D1: grava somente pelo endpoint administrativo da API. Para revogar o acesso, troque ou remova `IMPORT_TOKEN` no Worker; atualize também o secret do GitHub se quiser continuar usando a ação.
+
+### Executar a importação
+
+1. Abra [Actions → Importar amostra CNES na API](https://github.com/rafaelrmayer/Rede_Girassol_API_V_1/actions/workflows/cnes-import.yml).
+2. Clique em **Run workflow** na branch **`main`**. A ação só executa nessa branch.
+3. Mantenha UF **`41`**, município **`410690`** e quantidade **`3`** para o primeiro envio.
+4. Confirme **Run workflow**. Essa execução **grava no banco remoto**: insere CNES novos e atualiza os já existentes. Não exclui outros estabelecimentos.
+5. Quando terminar verde, abra o [painel](https://rede-girassol-api-v-1.rafael10mayer.workers.dev), clique em **Atualizar** e consulte **Estabelecimentos**. O resumo da execução informa quantos registros foram gravados e conferidos.
+
+O envio valida o hash do arquivo normalizado contra seus metadados e exige resposta de lote concluído. Em seguida, consulta cada CNES pela rota pública e compara os campos enviados. O token é utilizado somente no POST administrativo, sem seguir redirecionamentos; as consultas públicas não levam esse segredo. Execuções de importação são serializadas para evitar concorrência entre esses workflows.
+
+**Falhas:** HTTP `401` indica token ausente/incompatível ou configuração ainda não implantada. HTTP `403` pode indicar bloqueio de acesso pelo Cloudflare. Erro de conexão, timeout ou divergência depois do envio exige conferir o painel e o histórico: a gravação pode ter ocorrido mesmo que a conferência tenha falhado. Não há repetição automática nem rollback da gravação após uma falha na consulta pública. Reenviar os mesmos CNES atualiza os registros sem duplicá-los e cria outra entrada no histórico. A ação de apenas **Preparar amostra CNES** permanece disponível para baixar arquivos sem escrever no banco.
