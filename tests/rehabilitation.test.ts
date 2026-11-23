@@ -135,6 +135,21 @@ describe('documented autism support search',()=>{
     expect((await get('/v1/rehabilitation?cnes_code=0015466')).body.results[0].autism_care_verification).toBe('documented');
     expect((await get('/v1/autism-support?city=Londrina')).body.total).toBe(0);
   });
+  it('lists the six reviewed institutions, paginates and preserves unverified rehabilitation records',async()=>{
+    await send([...registry.entries.map(entry=>({...record,cnes_code:entry.cnes_code,establishment_name:entry.establishment_name})),record]);
+    const first=await get('/v1/autism-support?city=Curitiba&state=PR&limit=3');
+    const second=await get('/v1/autism-support?city=Curitiba&state=PR&limit=3&offset=3');
+    expect(first.body).toMatchObject({count:3,total:6,pagination:{has_more:true,next_offset:3}});
+    expect(second.body).toMatchObject({count:3,total:6,pagination:{has_more:false,next_offset:null}});
+    const rows=[...first.body.results,...second.body.results];
+    expect(new Set(rows.map(row=>row.cnes_code))).toEqual(new Set(registry.entries.map(entry=>entry.cnes_code)));
+    expect(rows.every(row=>row.autism_evidence.scope.includes('crianças e adolescentes'))).toBe(true);
+    expect((await get('/v1/autism-support?q=FEPE')).body.results[0].cnes_code).toBe('2774925');
+    expect((await get('/v1/rehabilitation')).body.total).toBe(7);
+    expect((await get('/v1/rehabilitation?cnes_code='+record.cnes_code)).body.results[0].autism_care_verification).toBe('not_verified');
+    vi.setSystemTime(new Date('2027-02-22T12:00:00Z'));
+    expect((await get('/v1/autism-support')).body.total).toBe(0);
+  });
   it('works with institution profiles even before monthly services are imported',async()=>{
     sqlite.exec("INSERT INTO establishments(id,cnes_code,name,city,state) VALUES('known','0015466','Encantar','Curitiba','PR')");
     expect((await get('/v1/autism-support')).body.total).toBe(1);

@@ -13,6 +13,71 @@
       "access_source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
       "access_source_published_on": "2025-04-02",
       "identity_source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/0015466"
+    },
+    {
+      "cnes_code": "3282910",
+      "establishment_name": "ESCOLA ESPECIAL LUAN MULLER",
+      "url": "https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418",
+      "published_on": "2026-03-30",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "scope": "APAE Luan Muller: rede credenciada para terapias multiprofissionais de crianças e adolescentes com TEA, segundo publicação municipal de março de 2026.",
+      "access_note": "Procure a unidade de saúde de referência para avaliação e encaminhamento pela rede municipal. Confirme critérios e disponibilidade.",
+      "access_source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
+      "access_source_published_on": "2025-04-02",
+      "identity_source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3282910"
+    },
+    {
+      "cnes_code": "3282961",
+      "establishment_name": "APAE SANTA FELICIDADE",
+      "url": "https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418",
+      "published_on": "2026-03-30",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "scope": "APAE Santa Felicidade: rede credenciada para terapias multiprofissionais de crianças e adolescentes com TEA, segundo publicação municipal de março de 2026.",
+      "access_note": "Procure a unidade de saúde de referência para avaliação e encaminhamento pela rede municipal. Confirme critérios e disponibilidade.",
+      "access_source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
+      "access_source_published_on": "2025-04-02",
+      "identity_source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3282961"
+    },
+    {
+      "cnes_code": "3282929",
+      "establishment_name": "CEDAE APAE CURITIBA",
+      "url": "https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418",
+      "published_on": "2026-03-30",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "scope": "APAE Cedae: rede credenciada para terapias multiprofissionais de crianças e adolescentes com TEA, segundo publicação municipal de março de 2026.",
+      "access_note": "Procure a unidade de saúde de referência para avaliação e encaminhamento pela rede municipal. Confirme critérios e disponibilidade.",
+      "access_source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
+      "access_source_published_on": "2025-04-02",
+      "identity_source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3282929"
+    },
+    {
+      "cnes_code": "2774925",
+      "establishment_name": "FEPE",
+      "url": "https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418",
+      "published_on": "2026-03-30",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "scope": "FEPE: rede credenciada para terapias multiprofissionais de crianças e adolescentes com TEA, segundo publicação municipal de março de 2026.",
+      "access_note": "Procure a unidade de saúde de referência para avaliação e encaminhamento pela rede municipal. Confirme critérios e disponibilidade.",
+      "access_source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
+      "access_source_published_on": "2025-04-02",
+      "identity_source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/2774925"
+    },
+    {
+      "cnes_code": "5750075",
+      "establishment_name": "NEUROINTERAGE REABILITACAO DESENVOLVIMENTO HUMANO",
+      "url": "https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418",
+      "published_on": "2026-03-30",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "scope": "Neuro Interage: rede credenciada para terapias multiprofissionais de crianças e adolescentes com TEA, segundo publicação municipal de março de 2026.",
+      "access_note": "Procure a unidade de saúde de referência para avaliação e encaminhamento pela rede municipal. Confirme critérios e disponibilidade.",
+      "access_source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
+      "access_source_published_on": "2025-04-02",
+      "identity_source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/5750075"
     }
   ]
 }
