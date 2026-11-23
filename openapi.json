@@ -1,0 +1,890 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Rede Girassol",
+    "version": "0.1.0",
+    "description": "API experimental de consulta a informações públicas de saúde. A integração CNES é parcial e manual; ANS permanece pendente. A pesquisa usa somente os registros já importados, sem garantia de cobertura nacional ou municipal completa. Cadastro não comprova rede credenciada de planos. Exemplos de estabelecimentos são fictícios e indicam apenas o formato. Esta definição contém somente consultas públicas, sem operações de administração.",
+    "contact": {
+      "name": "Rafael Ricardo Mayer",
+      "url": "https://github.com/rafaelrmayer"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://rede-girassol-api-v-1.rafael10mayer.workers.dev",
+      "description": "Worker público; base experimental com cobertura limitada."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Status",
+      "description": "Disponibilidade do Worker."
+    },
+    {
+      "name": "Fontes",
+      "description": "Origem e limites das integrações."
+    },
+    {
+      "name": "Estabelecimentos",
+      "description": "Cadastros importados do CNES ou de cargas normalizadas."
+    },
+    {
+      "name": "Operadoras",
+      "description": "Consultas preparadas; integração ANS pendente."
+    },
+    {
+      "name": "Planos",
+      "description": "Consultas preparadas; integração ANS pendente."
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "tags": [
+          "Status"
+        ],
+        "summary": "Consultar disponibilidade do Worker",
+        "description": "Verifica se o Worker responde. Esta rota não consulta o banco D1 e não garante disponibilidade das fontes CNES/IBGE.",
+        "responses": {
+          "200": {
+            "description": "Worker respondendo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                },
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "status": "ok",
+                      "service": "Rede Girassol API",
+                      "version": "0.1.0",
+                      "environment": "development"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/EdgeBlocked"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/sources": {
+      "get": {
+        "operationId": "listSources",
+        "tags": [
+          "Fontes"
+        ],
+        "summary": "Consultar fontes e estágio das integrações",
+        "description": "CNES possui carga manual e parcial. ANS continua com integração pendente. Esta rota não consulta diretamente as fontes nem contabiliza cobertura.",
+        "responses": {
+          "200": {
+            "description": "Fontes documentadas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sources"
+                },
+                "examples": {
+                  "current": {
+                    "value": {
+                      "sources": [
+                        {
+                          "id": "cnes",
+                          "name": "Cadastro Nacional de Estabelecimentos de Saúde",
+                          "url": "https://dadosabertos.saude.gov.br/dataset/cnes-cadastro-nacional-de-estabelecimentos-de-saude",
+                          "integration_status": "partial",
+                          "scope": "Carga manual e limitada de estabelecimentos; cobertura nacional e atualização automática ainda não implementadas."
+                        },
+                        {
+                          "id": "ans",
+                          "name": "Agência Nacional de Saúde Suplementar",
+                          "url": "https://www.gov.br/ans/pt-br/acesso-a-informacao/perfil-do-setor/dados-abertos-1",
+                          "integration_status": "mapping_pending"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/EdgeBlocked"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/places": {
+      "get": {
+        "operationId": "listPlaces",
+        "tags": [
+          "Estabelecimentos"
+        ],
+        "summary": "Pesquisar estabelecimentos importados",
+        "description": "Consulta somente o banco conectado à API. A base é limitada às cargas manuais realizadas. Nome e ID determinam a ordenação. Cadastro no CNES não comprova atendimento por plano, disponibilidade de serviços ou situação ativa atual.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial no nome, com espaços externos removidos. Segue a semântica LIKE do SQLite (% e _ são curingas).",
+            "schema": {
+              "type": "string"
+            },
+            "example": "hospital"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial por nome do município, com semântica LIKE do SQLite.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Curitiba"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "UF comparada após remover espaços externos e converter para maiúsculas. Valores sem correspondência retornam lista vazia.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "PR"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de estabelecimentos; pode estar vazia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacePage"
+                },
+                "examples": {
+                  "fictional": {
+                    "summary": "Formato ilustrativo com registro fictício; não representa a base em produção.",
+                    "value": {
+                      "results": [
+                        {
+                          "id": "cnes-0000001",
+                          "cnes_code": "0000001",
+                          "name": "Unidade de demonstração (exemplo fictício)",
+                          "city": "Curitiba",
+                          "state": "PR",
+                          "address": "Rua de exemplo, 100",
+                          "source": "sample",
+                          "source_updated_at": "2026-11-23"
+                        }
+                      ],
+                      "count": 1,
+                      "total": 1,
+                      "pagination": {
+                        "limit": 20,
+                        "offset": 0,
+                        "has_more": false,
+                        "next_offset": null
+                      },
+                      "note": "A consulta reflete somente os dados presentes na base."
+                    }
+                  },
+                  "empty": {
+                    "summary": "Nenhum resultado para os filtros.",
+                    "value": {
+                      "results": [],
+                      "count": 0,
+                      "total": 0,
+                      "pagination": {
+                        "limit": 20,
+                        "offset": 0,
+                        "has_more": false,
+                        "next_offset": null
+                      },
+                      "note": "A consulta reflete somente os dados presentes na base."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidPagination"
+          },
+          "403": {
+            "$ref": "#/components/responses/EdgeBlocked"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/places/{place_id}": {
+      "get": {
+        "operationId": "getPlace",
+        "tags": [
+          "Estabelecimentos"
+        ],
+        "summary": "Consultar estabelecimento por ID ou CNES",
+        "description": "Consulta um único registro já importado. Para CNES, preserve os sete dígitos e os zeros iniciais. O identificador interno também é aceito.",
+        "parameters": [
+          {
+            "name": "place_id",
+            "in": "path",
+            "required": true,
+            "description": "Código CNES de sete dígitos ou ID interno.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "0015245"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estabelecimento encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaceResult"
+                },
+                "examples": {
+                  "fictional": {
+                    "summary": "Exemplo fictício de formato.",
+                    "value": {
+                      "result": {
+                        "id": "cnes-0000001",
+                        "cnes_code": "0000001",
+                        "name": "Unidade de demonstração (exemplo fictício)",
+                        "city": "Curitiba",
+                        "state": "PR",
+                        "address": "Rua de exemplo, 100",
+                        "source": "sample",
+                        "source_updated_at": "2026-11-23",
+                        "imported_at": "2026-11-23 12:00:00"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ID ou CNES ausente no banco atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFound"
+                },
+                "examples": {
+                  "absent": {
+                    "value": {
+                      "error": "not_found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/EdgeBlocked"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/operators": {
+      "get": {
+        "operationId": "listOperators",
+        "tags": [
+          "Operadoras"
+        ],
+        "summary": "Pesquisar operadoras presentes no banco",
+        "description": "A integração ANS ainda não foi implementada. A rota pode retornar uma lista vazia. Registros presentes não confirmam situação cadastral na ANS.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial no nome, com espaços externos removidos. Segue a semântica LIKE do SQLite (% e _ são curingas).",
+            "schema": {
+              "type": "string"
+            },
+            "example": "hospital"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de operadoras.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorPage"
+                },
+                "examples": {
+                  "empty": {
+                    "value": {
+                      "results": [],
+                      "count": 0,
+                      "total": 0,
+                      "pagination": {
+                        "limit": 20,
+                        "offset": 0,
+                        "has_more": false,
+                        "next_offset": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidPagination"
+          },
+          "403": {
+            "$ref": "#/components/responses/EdgeBlocked"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/v1/plans": {
+      "get": {
+        "operationId": "listPlans",
+        "tags": [
+          "Planos"
+        ],
+        "summary": "Pesquisar produtos de saúde suplementar",
+        "description": "A integração ANS ainda não foi implementada. A presença de um produto não comprova cobertura, comercialização ou rede credenciada atual. A operadora associada pode estar ausente.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial no nome, com espaços externos removidos. Segue a semântica LIKE do SQLite (% e _ são curingas).",
+            "schema": {
+              "type": "string"
+            },
+            "example": "hospital"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de produtos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanPage"
+                },
+                "examples": {
+                  "empty": {
+                    "value": {
+                      "results": [],
+                      "count": 0,
+                      "total": 0,
+                      "pagination": {
+                        "limit": 20,
+                        "offset": 0,
+                        "has_more": false,
+                        "next_offset": null
+                      },
+                      "note": "A presença de um produto não comprova rede credenciada atual."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidPagination"
+          },
+          "403": {
+            "$ref": "#/components/responses/EdgeBlocked"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Registros por página. Omitido: 100. Valores vazios, repetidos ou não inteiros são recusados.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 100
+        },
+        "example": 20
+      },
+      "Offset": {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "description": "Número de registros a pular (não é o número da página). Omitido: 0. Valores vazios, repetidos, negativos ou não inteiros são recusados.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740891,
+          "default": 0
+        },
+        "example": 0
+      }
+    },
+    "responses": {
+      "InvalidPagination": {
+        "description": "Paginação inválida.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvalidPagination"
+            },
+            "examples": {
+              "invalid": {
+                "value": {
+                  "error": "invalid_pagination",
+                  "message": "Use limit inteiro de 1 a 100 e offset inteiro não negativo, sem repetir parâmetros."
+                }
+              }
+            }
+          }
+        }
+      },
+      "EdgeBlocked": {
+        "description": "Acesso bloqueado pelo Cloudflare antes de chegar ao Worker. O corpo pode ser gerado pela plataforma."
+      },
+      "InternalError": {
+        "description": "Falha no Worker ou no banco; o formato do corpo pode ser definido pela plataforma."
+      }
+    },
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "enum": [
+              "Rede Girassol API"
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string",
+            "description": "Rótulo de configuração; development também pode aparecer no endereço público."
+          }
+        },
+        "required": [
+          "status",
+          "service",
+          "version",
+          "environment"
+        ]
+      },
+      "Source": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "integration_status": {
+            "type": "string",
+            "description": "partial para a carga CNES e mapping_pending para ANS nesta versão."
+          },
+          "scope": {
+            "type": "string",
+            "description": "Limites conhecidos da integração, quando disponíveis."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "integration_status"
+        ]
+      },
+      "Sources": {
+        "type": "object",
+        "properties": {
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            }
+          }
+        },
+        "required": [
+          "sources"
+        ]
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 100
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740891,
+            "default": 0
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "Offset em registros para a próxima consulta, ou null quando a lista termina."
+          }
+        },
+        "required": [
+          "limit",
+          "offset",
+          "has_more",
+          "next_offset"
+        ]
+      },
+      "Place": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador interno estável; IDs legados podem ter outro formato."
+          },
+          "cnes_code": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^[0-9]{7}$",
+            "description": "Texto de sete dígitos, preservando zeros iniciais."
+          },
+          "name": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true,
+            "description": "UF brasileira quando informada."
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "description": "Origem declarada pelo importador, como cnes, manual ou sample; não atesta autenticidade."
+          },
+          "source_updated_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date",
+            "description": "Data de referência informada pela fonte; ausência não implica atualização recente."
+          }
+        },
+        "required": [
+          "id",
+          "cnes_code",
+          "name",
+          "city",
+          "state",
+          "address",
+          "source",
+          "source_updated_at"
+        ]
+      },
+      "PlaceDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Place"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "imported_at": {
+                "type": "string",
+                "description": "Horário de gravação UTC no formato SQLite YYYY-MM-DD HH:mm:ss; não é a data da fonte."
+              }
+            },
+            "required": [
+              "imported_at"
+            ]
+          }
+        ]
+      },
+      "PlaceResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/PlaceDetail"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "Operator": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ans_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "Situação informada pela carga; unconfirmed é o padrão do banco."
+          },
+          "source_updated_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date"
+          }
+        },
+        "required": [
+          "id",
+          "ans_code",
+          "name",
+          "status",
+          "source_updated_at"
+        ]
+      },
+      "Plan": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "registration_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "operator_name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "registration_code",
+          "status",
+          "operator_name"
+        ]
+      },
+      "PlacePage": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Place"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Quantidade de registros nesta página."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total correspondente aos filtros no banco atual; não é o total do CNES nacional."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "results",
+          "count",
+          "total",
+          "pagination",
+          "note"
+        ]
+      },
+      "OperatorPage": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Operator"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Quantidade de registros nesta página."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total correspondente aos filtros no banco atual; não é o total do CNES nacional."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "count",
+          "total",
+          "pagination"
+        ]
+      },
+      "PlanPage": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Plan"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Quantidade de registros nesta página."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total correspondente aos filtros no banco atual; não é o total do CNES nacional."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "results",
+          "count",
+          "total",
+          "pagination",
+          "note"
+        ]
+      },
+      "InvalidPagination": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "enum": [
+              "invalid_pagination"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "message"
+        ]
+      },
+      "NotFound": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "enum": [
+              "not_found"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Código, execução e limites do projeto",
+    "url": "https://github.com/rafaelrmayer/Rede_Girassol_API_V_1"
+  }
+}

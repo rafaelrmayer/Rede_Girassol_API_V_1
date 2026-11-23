@@ -68,7 +68,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     .dot.fail { background: var(--danger); box-shadow: 0 0 0 3px #f8e7e5; }
     .refresh {
       display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line);
-      background: white; color: var(--green-900); border-radius: 10px; padding: 10px 13px;
+      background: white; color: var(--green-900); border-radius: 10px; padding: 10px 13px; text-decoration: none;
       cursor: pointer; font-size: 12px; font-weight: 700;
     }
     .refresh:hover { background: var(--green-50); }
@@ -182,6 +182,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         </div>
         <div class="top-actions">
           <div class="api-pill" role="status" aria-live="polite"><span class="dot" id="apiDot"></span><span id="apiStatus">Consultando API…</span></div>
+          <a class="refresh" href="/docs">Documentação</a>
           <button class="refresh" id="refreshAll" type="button"><span aria-hidden="true">↻</span> Atualizar</button>
         </div>
       </header>
