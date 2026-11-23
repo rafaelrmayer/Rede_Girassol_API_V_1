@@ -29,6 +29,24 @@ Revisão documental: **23/11/2026**; prazo para nova revisão: **21/02/2027**. R
 
 A curadoria fica em [autism-support-sources.json](../autism-support-sources.json), versionada no repositório. Para adicionar uma instituição, verificar a identidade CNES, fonte governamental que mencione explicitamente o atendimento a TEA, público e critérios de acesso; registrar publicação, revisão e prazo de até 90 dias. As URLs precisam ser HTTPS governamentais. Evidência expirada deixa de ser elegível automaticamente. Importações administrativas não podem definir esse status. Nome contendo “autismo”, especialidade ou reabilitação intelectual não substituem a evidência. Catálogo inicial e não exaustivo: ausência de resultado não significa ausência de atendimento na cidade.
 
+## Ampliação revisada em 23/11/2026
+
+Além do Encantar, foram vinculadas cinco instituições já presentes na carga padrão de 19 observações:
+
+| Instituição citada na fonte municipal | Nome no CNES | CNES |
+|---|---|---|
+| APAE Luan Muller | ESCOLA ESPECIAL LUAN MULLER | 3282910 |
+| APAE Santa Felicidade | APAE SANTA FELICIDADE | 3282961 |
+| APAE Cedae | CEDAE APAE CURITIBA | 3282929 |
+| FEPE | FEPE | 2774925 |
+| Clínica Neuro Interage | NEUROINTERAGE REABILITACAO DESENVOLVIMENTO HUMANO | 5750075 |
+
+A [publicação municipal de 30/03/2026](https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418), seção “Novos serviços credenciados”, identifica esses prestadores no programa de terapias para TEA. Cada identidade foi conferida no endpoint oficial CNES indicado no registro de curadoria. O público informado é de crianças e adolescentes; não ampliamos essa afirmação para adultos.
+
+Mantemos a [orientação municipal de acesso](https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757): unidade de saúde de referência, avaliação e encaminhamento. A descrição da rede contratada na publicação não foi convertida em garantia de cobertura atual, vaga disponível ou acesso direto. Alguns campos administrativos do CNES refletem outra data e não coincidem com a descrição de contratação municipal; por isso é necessário confirmar com a rede responsável.
+
+Esta ampliação usa os mesmos campos, regras e prazo de revisão do registro inicial. Após o deploy, uma base que já recebeu a carga padrão passa a mostrar **seis instituições** em Autismo e apoio, mantendo **19 observações** em Reabilitação. Não exige SQL, nova importação nem alteração de segredos. Instituições com nome ambíguo ou unidade não identificada não foram incluídas.
+
 ## Fonte mensal de reabilitação
 
 - [CNES — Serviços especializados](https://dadosabertos.saude.gov.br/dataset/cnes_servicos_especializados).
