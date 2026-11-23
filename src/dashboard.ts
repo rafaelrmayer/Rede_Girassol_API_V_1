@@ -169,8 +169,6 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
           <button type="button" data-view="guide"><span class="nav-icon" aria-hidden="true">?</span>Encontre apoio</button>
           <button type="button" data-view="autism"><span class="nav-icon" aria-hidden="true">☀</span>Autismo e apoio</button>
           <button type="button" data-view="rehabilitation"><span class="nav-icon" aria-hidden="true">◎</span>Reabilitação</button>
-          <button type="button" data-view="operators"><span class="nav-icon" aria-hidden="true">▦</span>Operadoras</button>
-          <button type="button" data-view="plans"><span class="nav-icon" aria-hidden="true">▤</span>Planos</button>
           <button type="button" data-view="sources"><span class="nav-icon" aria-hidden="true">◎</span>Fontes e transparência</button>
         </nav>
       </div>
@@ -192,11 +190,11 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
 
       <section class="view active" id="overviewView" aria-labelledby="viewTitle">
         <p class="intro">Um ponto de consulta para informações públicas de saúde. O painel exibe somente o que a API efetivamente retorna; ausência de registros e falhas de consulta são informadas sem preencher a tela com exemplos.</p>
-        <div class="section-head"><div><h2>Resumo da base consultada</h2><p>Quantidade disponível na base atual. Os totais representam os registros importados neste banco; não são a cobertura nacional do CNES.</p></div></div>
+        <div class="section-head"><div><h2>Resumo da base consultada</h2><p>Quantidade disponível na base atual. Os totais representam os registros importados neste banco; não são a cobertura nacional do CNES. Reabilitação conta observações por modalidade e tipo, não instituições únicas.</p></div></div>
         <div class="cards">
           <article class="metric"><div class="metric-top"><span>Estabelecimentos</span><span class="metric-icon" aria-hidden="true">✚</span></div><div class="metric-value" id="placesCount">—</div><div class="metric-note" id="placesNote">Aguardando consulta à API</div></article>
-          <article class="metric"><div class="metric-top"><span>Operadoras</span><span class="metric-icon" aria-hidden="true">▦</span></div><div class="metric-value" id="operatorsCount">—</div><div class="metric-note" id="operatorsNote">Aguardando consulta à API</div></article>
-          <article class="metric"><div class="metric-top"><span>Planos</span><span class="metric-icon" aria-hidden="true">▤</span></div><div class="metric-value" id="plansCount">—</div><div class="metric-note" id="plansNote">Aguardando consulta à API</div></article>
+          <article class="metric"><div class="metric-top"><span>Autismo e apoio</span><span class="metric-icon" aria-hidden="true">▦</span></div><div class="metric-value" id="autismCount">—</div><div class="metric-note" id="autismNote">Aguardando consulta à API</div></article>
+          <article class="metric"><div class="metric-top"><span>Observações de reabilitação</span><span class="metric-icon" aria-hidden="true">▤</span></div><div class="metric-value" id="rehabilitationCount">—</div><div class="metric-note" id="rehabilitationNote">Aguardando consulta à API</div></article>
         </div>
         <div class="notice"><span class="notice-icon" aria-hidden="true">ⓘ</span><div><strong>Transparência dos dados.</strong> O cadastro de um estabelecimento no CNES não comprova, por si só, que ele integra a rede credenciada de um plano. O painel não faz essa associação sem evidência específica.</div></div>
         <div class="section-head"><div><h2>Fontes documentadas</h2><p>O estado é informado pela própria API.</p></div></div>
@@ -260,25 +258,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         <div class="panel table-panel"><div class="table-meta"><span id="rehabilitationMeta">Aguardando consulta</span><span>Fonte: CNES – Serviços especializados</span></div><div id="rehabilitationResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use os filtros para consultar os cadastros importados.</div></div><nav class="pager" aria-label="Paginação de reabilitação"><button class="refresh" type="button" id="rehabilitationPrevious" disabled>Anterior</button><span id="rehabilitationPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="rehabilitationNext" disabled>Próxima</button></nav></div>
       </section>
 
-      <section class="view" id="operatorsView" aria-labelledby="viewTitle">
-        <p class="intro">Consulte operadoras presentes na base. A presença de um registro não substitui a confirmação de situação cadastral diretamente na ANS.</p>
-        <form class="toolbar" id="operatorsForm">
-          <label class="search-wrap"><span class="sr-only">Pesquisar operadora</span><span class="search-symbol" aria-hidden="true">⌕</span><input id="operatorsQuery" type="search" placeholder="Nome da operadora" autocomplete="off"></label>
-          <button class="search-btn" type="submit">Pesquisar</button>
-        </form>
-        <div class="panel table-panel"><div class="table-meta"><span id="operatorsMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="operatorsResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use a pesquisa para consultar os registros disponíveis.</div></div><nav class="pager" aria-label="Paginação de operadoras"><button class="refresh" type="button" id="operatorsPrevious" disabled>Anterior</button><span id="operatorsPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="operatorsNext" disabled>Próxima</button></nav></div>
-      </section>
-
-      <section class="view" id="plansView" aria-labelledby="viewTitle">
-        <p class="intro">Consulte produtos de saúde suplementar cadastrados. A presença de um produto não comprova cobertura, comercialização atual ou rede credenciada vigente.</p>
-        <form class="toolbar" id="plansForm">
-          <label class="search-wrap"><span class="sr-only">Pesquisar plano</span><span class="search-symbol" aria-hidden="true">⌕</span><input id="plansQuery" type="search" placeholder="Nome do produto ou plano" autocomplete="off"></label>
-          <button class="search-btn" type="submit">Pesquisar</button>
-        </form>
-        <div class="panel table-panel"><div class="table-meta"><span id="plansMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="plansResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use a pesquisa para consultar os registros disponíveis.</div></div><nav class="pager" aria-label="Paginação de planos"><button class="refresh" type="button" id="plansPrevious" disabled>Anterior</button><span id="plansPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="plansNext" disabled>Próxima</button></nav></div>
-      </section>
-
-      <section class="view" id="sourcesView" aria-labelledby="viewTitle">
+<section class="view" id="sourcesView" aria-labelledby="viewTitle">
         <p class="intro">A Rede Girassol pretende utilizar fontes oficiais e manter origem, data de referência e limites de cada conjunto de dados. A integração só será tratada como concluída depois de implementada e validada.</p>
         <div class="source-grid" id="allSources"><div class="panel"><p class="panel-copy">Consultando as fontes documentadas…</p></div></div>
         <div class="section-head"><div><h2>Critérios de transparência</h2><p>Regras que orientam a apresentação das informações.</p></div></div>
@@ -301,11 +281,9 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       guide: "Encontre apoio · Experimental",
       autism: "Autismo e apoio",
       rehabilitation: "Serviços de reabilitação",
-      operators: "Operadoras",
-      plans: "Planos",
       sources: "Fontes e transparência"
     };
-    const views = ["guide", "overview", "places", "autism", "rehabilitation", "operators", "plans", "sources"];
+    const views = ["guide", "overview", "places", "autism", "rehabilitation", "sources"];
     const state = { sources: [], summary: {} };
     const byId = function (id) { return document.getElementById(id); };
 
@@ -521,14 +499,6 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         { label: "Referência CNES", value: function (r) { return r.reference_month ? r.reference_month.slice(4) + "/" + r.reference_month.slice(0,4) : "—"; } },
         { label: "Tipo de registro", value: "service_type" },
         { label: "Atendimento específico a TEA", value: function (r) { return r.autism_care_verification === "documented" ? "Documentado em fonte oficial" : "Não verificado — confirme com o serviço"; } }
-      ] },
-      operators: { endpoint: "/v1/operators", emptyTitle: "Nenhuma operadora disponível", columns: [
-        { label: "Operadora", value: "name", primary: true }, { label: "Registro ANS", value: "ans_code" },
-        { label: "Situação cadastrada", value: "status" }, { label: "Atualização da fonte", value: "source_updated_at" }
-      ] },
-      plans: { endpoint: "/v1/plans", emptyTitle: "Nenhum produto disponível", columns: [
-        { label: "Produto / plano", value: "name", primary: true }, { label: "Registro do produto", value: "registration_code" },
-        { label: "Operadora associada na base", value: "operator_name" }, { label: "Situação cadastrada", value: "status" }
       ] }
     };
     const pages = {};
@@ -595,16 +565,14 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         reference_month: byId("rehabilitationMonth").value.replace("-", "")};
     }
     function loadRehabilitation() { return loadCollection("rehabilitation", rehabilitationFilters(), 0); }
-    function loadOperators(query) { return loadCollection("operators", {q: query}, 0); }
-    function loadPlans(query) { return loadCollection("plans", {q: query}, 0); }
     async function refreshOverview() {
       showApiStatus(false, "Consultando API…");
       const healthPromise = api("/health");
       const placesPromise = api("/v1/places?limit=1");
-      const operatorsPromise = api("/v1/operators?limit=1");
-      const plansPromise = api("/v1/plans?limit=1");
+      const autismPromise = api("/v1/autism-support?limit=1");
+      const rehabilitationPromise = api("/v1/rehabilitation?limit=1");
       const sourcesPromise = api("/sources");
-      const results = await Promise.allSettled([healthPromise, placesPromise, operatorsPromise, plansPromise, sourcesPromise]);
+      const results = await Promise.allSettled([healthPromise, placesPromise, autismPromise, rehabilitationPromise, sourcesPromise]);
       const health = results[0];
       if (health.status === "fulfilled" && health.value.status === "ok") {
         showApiStatus(true, "API respondendo · v" + safeValue(health.value.version));
@@ -612,8 +580,8 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         showApiStatus(false, "API indisponível");
       }
       updateMetric("places", results[1].status === "fulfilled" ? results[1].value : null, results[1].status === "rejected");
-      updateMetric("operators", results[2].status === "fulfilled" ? results[2].value : null, results[2].status === "rejected");
-      updateMetric("plans", results[3].status === "fulfilled" ? results[3].value : null, results[3].status === "rejected");
+      updateMetric("autism", results[2].status === "fulfilled" ? results[2].value : null, results[2].status === "rejected");
+      updateMetric("rehabilitation", results[3].status === "fulfilled" ? results[3].value : null, results[3].status === "rejected");
       if (results[4].status === "fulfilled" && Array.isArray(results[4].value.sources)) {
         state.sources = results[4].value.sources;
       } else {
@@ -680,8 +648,6 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       if (view === "places") loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
       if (view === "autism") loadAutism();
       if (view === "rehabilitation") loadRehabilitation();
-      if (view === "operators") loadOperators(byId("operatorsQuery").value.trim());
-      if (view === "plans") loadPlans(byId("plansQuery").value.trim());
       if (view === "sources") api("/sources").then(function (data) {
         state.sources = Array.isArray(data.sources) ? data.sources : [];
         renderSources("allSources");
@@ -698,22 +664,12 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     });
     byId("autismForm").addEventListener("submit", function (event) {event.preventDefault(); loadAutism();});
     byId("rehabilitationForm").addEventListener("submit", function (event) { event.preventDefault(); loadRehabilitation(); });
-    byId("operatorsForm").addEventListener("submit", function (event) {
-      event.preventDefault();
-      loadOperators(byId("operatorsQuery").value.trim());
-    });
-    byId("plansForm").addEventListener("submit", function (event) {
-      event.preventDefault();
-      loadPlans(byId("plansQuery").value.trim());
-    });
     byId("refreshAll").addEventListener("click", async function () {
       await refreshOverview();
       const active = document.querySelector(".view.active");
       if (active && active.id === "placesView") loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
       if (active && active.id === "autismView") loadAutism();
       if (active && active.id === "rehabilitationView") loadRehabilitation();
-      if (active && active.id === "operatorsView") loadOperators(byId("operatorsQuery").value.trim());
-      if (active && active.id === "plansView") loadPlans(byId("plansQuery").value.trim());
     });
     refreshOverview();
   </script>
