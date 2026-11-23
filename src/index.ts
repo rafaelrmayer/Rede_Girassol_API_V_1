@@ -1,3 +1,6 @@
+import { listAutismSupport } from './autism-support';
+import { listRehabilitation } from './rehabilitation';
+import rehabilitationCatalog from '../rehabilitation-classifications.json';
 import openapi from "../openapi.json";
 import { DOCS_HTML } from "./docs";
 import { pagination, readPage } from "./pagination";
@@ -71,6 +74,8 @@ export default {
       return json({
         sources: [
           { id: "cnes", name: "Cadastro Nacional de Estabelecimentos de Saúde", url: "https://dadosabertos.saude.gov.br/dataset/cnes-cadastro-nacional-de-estabelecimentos-de-saude", integration_status: "partial", scope: "Carga manual e limitada de estabelecimentos; cobertura nacional e atualização automática ainda não implementadas." },
+          { id: "cnes-services", name: "CNES – Serviços especializados de reabilitação", url: rehabilitationCatalog.source_url, integration_status: "partial", scope: "Observações mensais do serviço 135; atendimento específico a TEA não verificado." },
+          { id: "autism-support", name: "Atendimento a TEA documentado em fontes oficiais", url: "https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418", integration_status: "partial", scope: "Curadoria manual com fonte, público, datas e prazo de revisão; não confirma vagas nem cobertura completa." },
           { id: "ans", name: "Agência Nacional de Saúde Suplementar", url: "https://www.gov.br/ans/pt-br/acesso-a-informacao/perfil-do-setor/dados-abertos-1", integration_status: "mapping_pending" }
         ]
       });
@@ -87,6 +92,16 @@ export default {
         return json({ imports: result.results ?? [] });
       }
       return json({ error: "not_found" }, 404);
+    }
+
+    if (request.method === "GET" && path === "/v1/autism-support") {
+      const result = await listAutismSupport(url.searchParams, env.DB);
+      return json(result.body, result.status);
+    }
+
+    if (request.method === "GET" && path === "/v1/rehabilitation") {
+      const result = await listRehabilitation(url.searchParams, env.DB);
+      return json(result.body, result.status);
     }
 
     if (request.method === "GET" && path === "/v1/places") {

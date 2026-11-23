@@ -1,0 +1,106 @@
+name: Importar serviços de reabilitação CNES
+
+on:
+  workflow_dispatch:
+    inputs:
+      state:
+        description: 'UF do cadastro (sigla)'
+        required: true
+        default: 'PR'
+        type: string
+      municipality:
+        description: 'Código do município CNES com 6 dígitos'
+        required: true
+        default: '410690'
+        type: string
+      reference_month:
+        description: 'Competência histórica AAAAMM disponível no ZIP oficial (jul/2026: 202607)'
+        required: true
+        default: '202607'
+        type: string
+      classification:
+        description: 'Classificação CNES (002: intelectual; vazio: todas do serviço 135)'
+        required: false
+        default: '002'
+        type: string
+      limit:
+        description: 'Limite de observações a importar (1 a 100)'
+        required: true
+        default: '20'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cnes-import-production
+  cancel-in-progress: false
+
+jobs:
+  import:
+    name: Preparar, importar e conferir observações
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Testar preparação e publicação
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Conferir token, deploy e catálogo antes do download
+        env:
+          IMPORT_TOKEN: ${{ secrets.REDE_GIRASSOL_IMPORT_TOKEN }}
+        run: python3 scripts/publish_rehabilitation.py --check-only
+      - name: Baixar base oficial e preparar a competência selecionada
+        env:
+          SERVICE_STATE: ${{ inputs.state }}
+          SERVICE_MUNICIPALITY: ${{ inputs.municipality }}
+          SERVICE_MONTH: ${{ inputs.reference_month }}
+          SERVICE_CLASSIFICATION: ${{ inputs.classification }}
+          SERVICE_LIMIT: ${{ inputs.limit }}
+        run: |
+          python3 scripts/prepare_rehabilitation.py \
+            --state "$SERVICE_STATE" \
+            --municipality "$SERVICE_MUNICIPALITY" \
+            --reference-month "$SERVICE_MONTH" \
+            --classification "$SERVICE_CLASSIFICATION" \
+            --limit "$SERVICE_LIMIT" \
+            --output data/rehabilitation.json
+      - name: Importar e conferir cada observação
+        env:
+          IMPORT_TOKEN: ${{ secrets.REDE_GIRASSOL_IMPORT_TOKEN }}
+        run: |
+          python3 scripts/publish_rehabilitation.py \
+            --file data/rehabilitation.json \
+            --metadata data/rehabilitation.json.metadata.json \
+            --output data/rehabilitation-importacao.json
+      - name: Guardar registros, procedência e comprovante
+        uses: actions/upload-artifact@v4
+        with:
+          name: cnes-reabilitacao-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/rehabilitation.json
+            data/rehabilitation.json.metadata.json
+            data/rehabilitation-importacao.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Exibir resultado
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          receipt = json.loads(Path('data/rehabilitation-importacao.json').read_text(encoding='utf-8'))
+          metadata = json.loads(Path('data/rehabilitation.json.metadata.json').read_text(encoding='utf-8'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+              summary.write('## Reabilitação: importação concluída\n\n')
+              summary.write(f'**{receipt["records_imported"]} observações** importadas e conferidas, em **{receipt["establishments_seen"]} estabelecimentos**.\n\n')
+              summary.write(f'Competência CNES: **{metadata["reference_month"]}**. São registros históricos, sem garantia de atendimento atual.\n\n')
+              summary.write('Abra o [painel](https://rede-girassol-api-v-1.rafael10mayer.workers.dev), recarregue e escolha **Reabilitação**.\n\n')
+              summary.write('A busca **Autismo e apoio** inclui somente fontes explícitas revisadas; a classificação intelectual não gera essa confirmação.\n\n')
+              summary.write('Registros, metadados e comprovante ficam em **Artifacts** por sete dias.\n')
+          PY

@@ -1,3 +1,4 @@
+import { importRehabilitation } from './rehabilitation';
 const states = new Set('AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' '));
 const recordKeys = new Set(['id', 'cnes_code', 'name', 'city', 'state', 'address', 'source', 'source_updated_at']);
 function object(value: unknown): value is Record<string, unknown> {
@@ -23,6 +24,7 @@ export async function importPlaces(request: Request, db: D1Database): Promise<{s
     for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
     payload = JSON.parse(new TextDecoder().decode(bytes));
   } catch { return {status: 400, body: {error: 'invalid_json'}}; }
+  if (object(payload) && payload.entity === 'rehabilitation_services') return importRehabilitation(payload, db);
   if (!object(payload) || typeof payload.source !== 'string' || !['cnes', 'manual', 'sample'].includes(payload.source) ||
       (payload.entity !== undefined && payload.entity !== 'establishments') ||
       Object.keys(payload).some(key => !['source', 'entity', 'records'].includes(key)) ||

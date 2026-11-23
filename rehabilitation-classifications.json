@@ -1,0 +1,20 @@
+{
+  "service_code": "135",
+  "service_name": "Reabilitação",
+  "reference_url": "https://bvsms.saude.gov.br/bvs/saudelegis/Saes/2024/prt2151_16_10_2024.html",
+  "source_url": "https://dadosabertos.saude.gov.br/dataset/cnes_servicos_especializados",
+  "classifications": [
+    {"code": "001", "name": "Reabilitação Visual"},
+    {"code": "002", "name": "Reabilitação Intelectual"},
+    {"code": "003", "name": "Reabilitação Física"},
+    {"code": "005", "name": "Reabilitação Auditiva"},
+    {"code": "007", "name": "Oficina Ortopédica Fixa"},
+    {"code": "008", "name": "Oficina Ortopédica Itinerante"},
+    {"code": "010", "name": "Atenção Fonoaudiológica"},
+    {"code": "011", "name": "Atenção Fisioterapêutica"},
+    {"code": "012", "name": "Atenção à Saúde das Pessoas Estomizadas I"},
+    {"code": "013", "name": "Atenção à Saúde das Pessoas Estomizadas II"}
+  ],
+  "autism_care_verification": "not_verified",
+  "note": "O cadastro de reabilitação, inclusive intelectual, não confirma atendimento específico a pessoas autistas, habilitação como CER, disponibilidade atual ou cobertura SUS/planos. Confirme diretamente com o serviço."
+}

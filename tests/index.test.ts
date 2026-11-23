@@ -16,7 +16,7 @@ describe("Rede Girassol API", () => {
     const response = await app.fetch(new Request("https://example.test/sources"), env);
     const body = await response.json() as any;
     expect(response.status).toBe(200);
-    expect(body.sources.map((source: any) => source.id)).toEqual(["cnes", "ans"]);
+    expect(body.sources.map((source: any) => source.id)).toEqual(["cnes", "cnes-services", "autism-support", "ans"]);
     expect(body.sources[0]).toMatchObject({integration_status: "partial", scope: expect.any(String)});
   });
 

@@ -29,8 +29,8 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body { margin: 0; color: var(--ink); background: var(--paper); min-height: 100vh; }
-    button, input { font: inherit; }
-    button:focus-visible, input:focus-visible, a:focus-visible {
+    button, input, select { font: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
       outline: 3px solid #c18e2c; outline-offset: 3px;
     }
     .app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
@@ -100,7 +100,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     .view.active { display: block; }
     .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 18px 0 14px; }
     .search-wrap { position: relative; flex: 1 1 260px; max-width: 470px; }
-    .search-wrap input {
+    .search-wrap input, .search-wrap select {
       width: 100%; min-height: 42px; border: 1px solid var(--line); border-radius: 10px;
       background: white; padding: 0 13px 0 38px; color: var(--ink); font-size: 13px;
     }
@@ -166,6 +166,8 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         <nav class="nav" aria-label="Seções do painel">
           <button type="button" data-view="overview" aria-current="page"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</button>
           <button type="button" data-view="places"><span class="nav-icon" aria-hidden="true">✚</span>Estabelecimentos</button>
+          <button type="button" data-view="autism"><span class="nav-icon" aria-hidden="true">☀</span>Autismo e apoio</button>
+          <button type="button" data-view="rehabilitation"><span class="nav-icon" aria-hidden="true">◎</span>Reabilitação</button>
           <button type="button" data-view="operators"><span class="nav-icon" aria-hidden="true">▦</span>Operadoras</button>
           <button type="button" data-view="plans"><span class="nav-icon" aria-hidden="true">▤</span>Planos</button>
           <button type="button" data-view="sources"><span class="nav-icon" aria-hidden="true">◎</span>Fontes e transparência</button>
@@ -211,6 +213,33 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         <div class="panel table-panel"><div class="table-meta"><span id="placesMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="placesResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use os filtros para consultar os registros disponíveis.</div></div><nav class="pager" aria-label="Paginação de estabelecimentos"><button class="refresh" type="button" id="placesPrevious" disabled>Anterior</button><span id="placesPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="placesNext" disabled>Próxima</button></nav></div>
       </section>
 
+      <section class="view" id="autismView" aria-labelledby="viewTitle">
+        <p class="intro">Busque estabelecimentos com atendimento a pessoas autistas descrito em fonte oficial revisada. Confira o público atendido, a data e o encaminhamento informado. A documentação não confirma vagas nem atendimento para todas as idades.</p>
+        <form class="toolbar" id="autismForm">
+          <label class="search-wrap"><span class="sr-only">Pesquisar atendimento a TEA por estabelecimento</span><input id="autismQuery" type="search" placeholder="Nome do estabelecimento" autocomplete="off"></label>
+          <label class="search-wrap"><span class="sr-only">Cidade para atendimento a TEA</span><input id="autismCity" type="search" placeholder="Cidade (opcional)" autocomplete="off"></label>
+          <label class="search-wrap" style="flex:0 1 110px"><span class="sr-only">UF para atendimento a TEA</span><input id="autismState" type="text" maxlength="2" placeholder="UF" autocomplete="off"></label>
+          <button class="search-btn" type="submit">Pesquisar</button>
+        </form>
+        <div class="notice"><span class="notice-icon" aria-hidden="true">ⓘ</span><div>Esta busca mostra somente estabelecimentos ligados a uma <strong>fonte explícita sobre atendimento a TEA</strong>, dentro do prazo de revisão. É um catálogo inicial e não exaustivo. Os demais registros estão em Reabilitação e precisam de confirmação específica.</div></div>
+        <div class="panel table-panel"><div class="table-meta"><span id="autismMeta">Aguardando consulta</span><span>Fontes oficiais revisadas manualmente</span></div><div id="autismResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Pesquise os registros documentados disponíveis.</div></div><nav class="pager" aria-label="Paginação de apoio ao autismo"><button class="refresh" type="button" id="autismPrevious" disabled>Anterior</button><span id="autismPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="autismNext" disabled>Próxima</button></nav></div>
+      </section>
+
+      <section class="view" id="rehabilitationView" aria-labelledby="viewTitle">
+        <p class="intro">Consulte observações mensais de serviços de reabilitação cadastrados no CNES. Reabilitação intelectual, por si só, não confirma atendimento específico a pessoas autistas. Confira a referência do cadastro e confirme atendimento, agenda e forma de acesso diretamente com o serviço.</p>
+        <p class="panel-copy"><a class="source-link" href="https://dadosabertos.saude.gov.br/dataset/cnes_servicos_especializados" target="_blank" rel="noopener noreferrer">Consultar fonte oficial CNES ↗</a></p>
+        <form class="toolbar" id="rehabilitationForm">
+          <label class="search-wrap"><span class="sr-only">Nome do serviço de reabilitação</span><input id="rehabilitationQuery" type="search" placeholder="Nome do estabelecimento" autocomplete="off"></label>
+          <label class="search-wrap"><span class="sr-only">Cidade do cadastro de reabilitação</span><input id="rehabilitationCity" type="search" placeholder="Cidade (opcional)" autocomplete="off"></label>
+          <label class="search-wrap" style="flex:0 1 110px"><span class="sr-only">UF do cadastro de reabilitação</span><input id="rehabilitationState" type="text" maxlength="2" placeholder="UF" autocomplete="off"></label>
+          <label class="search-wrap"><span class="sr-only">Modalidade de reabilitação</span><select id="rehabilitationClassification"><option value="">Todas as modalidades</option></select></label>
+          <label class="search-wrap"><span class="field-description">Referência mensal (opcional)</span><input id="rehabilitationMonth" type="month" aria-label="Referência mensal de reabilitação"></label>
+          <button class="search-btn" type="submit">Pesquisar</button>
+        </form>
+        <div class="notice"><span class="notice-icon" aria-hidden="true">ⓘ</span><div>Os resultados são <strong>observações de cadastro</strong>, não uma lista de vagas ou de atendimento confirmado a TEA. Sem filtro de mês, mostramos a observação mais recente importada por CNES, modalidade e tipo de serviço. A ausência de resultado não comprova ausência de atendimento.</div></div>
+        <div class="panel table-panel"><div class="table-meta"><span id="rehabilitationMeta">Aguardando consulta</span><span>Fonte: CNES – Serviços especializados</span></div><div id="rehabilitationResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use os filtros para consultar os cadastros importados.</div></div><nav class="pager" aria-label="Paginação de reabilitação"><button class="refresh" type="button" id="rehabilitationPrevious" disabled>Anterior</button><span id="rehabilitationPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="rehabilitationNext" disabled>Próxima</button></nav></div>
+      </section>
+
       <section class="view" id="operatorsView" aria-labelledby="viewTitle">
         <p class="intro">Consulte operadoras presentes na base. A presença de um registro não substitui a confirmação de situação cadastral diretamente na ANS.</p>
         <form class="toolbar" id="operatorsForm">
@@ -249,11 +278,13 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     const titles = {
       overview: "Visão geral",
       places: "Estabelecimentos",
+      autism: "Autismo e apoio",
+      rehabilitation: "Serviços de reabilitação",
       operators: "Operadoras",
       plans: "Planos",
       sources: "Fontes e transparência"
     };
-    const views = ["overview", "places", "operators", "plans", "sources"];
+    const views = ["overview", "places", "autism", "rehabilitation", "operators", "plans", "sources"];
     const state = { sources: [], summary: {} };
     const byId = function (id) { return document.getElementById(id); };
 
@@ -388,7 +419,20 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       rows.forEach(function (row) {
         const tr = document.createElement("tr");
         columns.forEach(function (column) {
-          tr.appendChild(makeCell(typeof column.value === "function" ? column.value(row) : row[column.value], Boolean(column.primary)));
+          const value = typeof column.value === "function" ? column.value(row) : row[column.value];
+          const cell = makeCell(value, Boolean(column.primary));
+          if (column.link) {
+            try {
+              const url = new URL(column.link(row));
+              if (url.protocol === "https:") {
+                const link = document.createElement("a");
+                link.href = url.href; link.target = "_blank"; link.rel = "noopener noreferrer";
+                link.textContent = safeValue(value); link.className = "source-link";
+                cell.replaceChildren(link);
+              }
+            } catch (_) {}
+          }
+          tr.appendChild(cell);
         });
         tbody.appendChild(tr);
       });
@@ -409,6 +453,22 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         { label: "Cidade / UF", value: function (r) { return [r.city, r.state].filter(Boolean).join(" / "); } },
         { label: "Endereço", value: "address" }, { label: "Fonte", value: "source" },
         { label: "Atualização da fonte", value: "source_updated_at" }
+      ] },
+      autism: { endpoint: "/v1/autism-support", emptyTitle: "Nenhum atendimento documentado disponível com esses filtros", columns: [
+        { label: "Estabelecimento", value: "name", primary: true }, { label: "CNES", value: "cnes_code" },
+        { label: "Cidade / UF", value: function (r) { return [r.city,r.state].filter(Boolean).join(" / "); } },
+        { label: "Público e acesso informado", value: function (r) { return r.autism_evidence.scope + " " + r.autism_evidence.access_note; } },
+        { label: "Fonte do atendimento", value: function () { return "Consultar publicação oficial ↗"; }, link: function (r) { return r.autism_evidence.url; } },
+        { label: "Publicação da fonte", value: function (r) { return r.autism_evidence.published_on; } },
+        { label: "Revisão da fonte", value: function (r) { return r.autism_evidence.reviewed_on; } }
+      ] },
+      rehabilitation: { endpoint: "/v1/rehabilitation", emptyTitle: "Nenhum cadastro de reabilitação disponível", columns: [
+        { label: "Estabelecimento na referência", value: "name", primary: true }, { label: "CNES", value: "cnes_code" },
+        { label: "Cidade / UF", value: function (r) { return [r.city, r.state].filter(Boolean).join(" / "); } },
+        { label: "Modalidade cadastrada", value: "classification_name" },
+        { label: "Referência CNES", value: function (r) { return r.reference_month ? r.reference_month.slice(4) + "/" + r.reference_month.slice(0,4) : "—"; } },
+        { label: "Tipo de registro", value: "service_type" },
+        { label: "Atendimento específico a TEA", value: function (r) { return r.autism_care_verification === "documented" ? "Documentado em fonte oficial" : "Não verificado — confirme com o serviço"; } }
       ] },
       operators: { endpoint: "/v1/operators", emptyTitle: "Nenhuma operadora disponível", columns: [
         { label: "Operadora", value: "name", primary: true }, { label: "Registro ANS", value: "ans_code" },
@@ -449,6 +509,13 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         if (version !== page.version) return;
         const rows = Array.isArray(data.results) ? data.results : [];
         if (!data.pagination || !Number.isSafeInteger(data.total)) throw new Error("A API não informou a paginação.");
+        if (kind === "rehabilitation" && Array.isArray(data.classifications)) {
+          const select = byId("rehabilitationClassification");
+          const selected = select.value;
+          select.replaceChildren(new Option("Todas as modalidades", ""));
+          data.classifications.forEach(function (item) { select.appendChild(new Option(item.name, item.code)); });
+          select.value = selected;
+        }
         page.offset = offset;
         page.filters = filters;
         page.nextOffset = data.pagination.next_offset;
@@ -467,6 +534,15 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       }
     }
     function loadPlaces(query) { return loadCollection("places", query || {}, 0); }
+    function loadAutism() {
+      return loadCollection("autism", {q: byId("autismQuery").value.trim(), city: byId("autismCity").value.trim(), state: byId("autismState").value.trim()}, 0);
+    }
+    function rehabilitationFilters() {
+      return {q: byId("rehabilitationQuery").value.trim(), city: byId("rehabilitationCity").value.trim(),
+        state: byId("rehabilitationState").value.trim(), classification_code: byId("rehabilitationClassification").value,
+        reference_month: byId("rehabilitationMonth").value.replace("-", "")};
+    }
+    function loadRehabilitation() { return loadCollection("rehabilitation", rehabilitationFilters(), 0); }
     function loadOperators(query) { return loadCollection("operators", {q: query}, 0); }
     function loadPlans(query) { return loadCollection("plans", {q: query}, 0); }
     async function refreshOverview() {
@@ -506,6 +582,8 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       });
       setText("viewTitle", titles[view]);
       if (view === "places") loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
+      if (view === "autism") loadAutism();
+      if (view === "rehabilitation") loadRehabilitation();
       if (view === "operators") loadOperators(byId("operatorsQuery").value.trim());
       if (view === "plans") loadPlans(byId("plansQuery").value.trim());
       if (view === "sources") api("/sources").then(function (data) {
@@ -522,6 +600,8 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       event.preventDefault();
       loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
     });
+    byId("autismForm").addEventListener("submit", function (event) {event.preventDefault(); loadAutism();});
+    byId("rehabilitationForm").addEventListener("submit", function (event) { event.preventDefault(); loadRehabilitation(); });
     byId("operatorsForm").addEventListener("submit", function (event) {
       event.preventDefault();
       loadOperators(byId("operatorsQuery").value.trim());
@@ -534,6 +614,8 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       await refreshOverview();
       const active = document.querySelector(".view.active");
       if (active && active.id === "placesView") loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
+      if (active && active.id === "autismView") loadAutism();
+      if (active && active.id === "rehabilitationView") loadRehabilitation();
       if (active && active.id === "operatorsView") loadOperators(byId("operatorsQuery").value.trim());
       if (active && active.id === "plansView") loadPlans(byId("plansQuery").value.trim());
     });
