@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "https://rede-girassol-api-v-1.rafael10mayer.workers.dev",
+      "url": "https://rede-girassol-api-v-1.rafael10mayer.workers.dev/rapidapi",
       "description": "Worker público; base experimental com cobertura limitada."
     }
   ],
@@ -69,10 +69,75 @@
             }
           },
           "403": {
-            "$ref": "#/components/responses/EdgeBlocked"
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -118,10 +183,75 @@
             }
           },
           "403": {
-            "$ref": "#/components/responses/EdgeBlocked"
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -230,10 +360,75 @@
             "$ref": "#/components/responses/InvalidPagination"
           },
           "403": {
-            "$ref": "#/components/responses/EdgeBlocked"
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -305,10 +500,75 @@
             }
           },
           "403": {
-            "$ref": "#/components/responses/EdgeBlocked"
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -392,10 +652,75 @@
             }
           },
           "403": {
-            "$ref": "#/components/responses/EdgeBlocked"
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -518,17 +843,14 @@
             }
           },
           "403": {
-            "$ref": "#/components/responses/EdgeBlocked"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          },
-          "503": {
-            "description": "Catálogo indisponível; verificar migração e banco.",
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "error"
+                  ],
                   "properties": {
                     "error": {
                       "type": "string"
@@ -536,10 +858,57 @@
                     "message": {
                       "type": "string"
                     }
-                  },
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
                   "required": [
                     "error"
-                  ]
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -584,6 +953,74 @@
                     "error",
                     "message"
                   ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -639,9 +1076,6 @@
             }
           }
         }
-      },
-      "EdgeBlocked": {
-        "description": "Acesso bloqueado pelo Cloudflare antes de chegar ao Worker. O corpo pode ser gerado pela plataforma."
       },
       "InternalError": {
         "description": "Falha no Worker ou no banco; o formato do corpo pode ser definido pela plataforma."
