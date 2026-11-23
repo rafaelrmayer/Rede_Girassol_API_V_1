@@ -11,6 +11,7 @@ import urllib.request
 from prepare_cnes_sample import digest
 
 API_URL = 'https://rede-girassol-api-v-1.rafael10mayer.workers.dev'
+USER_AGENT = 'RedeGirassol-CNES-Importer/0.1 (+https://github.com/rafaelrmayer/Rede_Girassol_API_V_1)'
 FIELDS = ('cnes_code', 'name', 'city', 'state', 'address', 'source', 'source_updated_at')
 
 
@@ -51,14 +52,14 @@ def publish(payload, metadata, token, opener=None, api_url=API_URL):
         raise PublicationError('Configure REDE_GIRASSOL_IMPORT_TOKEN nos secrets do GitHub e IMPORT_TOKEN no Worker com o mesmo valor')
     opener = opener or urllib.request.build_opener(NoRedirect())
     request = urllib.request.Request(api_url + '/admin/import', data=json.dumps(payload).encode('utf-8'),
-                                     headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'}, method='POST')
+                                     headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'User-Agent': USER_AGENT, 'Authorization': f'Bearer {token}'}, method='POST')
     with opener.open(request, timeout=30) as response:
         result = json.load(response)
         if response.status != 200 or not isinstance(result, dict) or result.get('status') != 'completed' or not result.get('import_id') or result.get('records_imported') != len(records):
             raise PublicationError('A API não confirmou a conclusão do lote; confira o histórico antes de repetir')
     # Public reads deliberately carry no administrative token.
     for row in records:
-        request = urllib.request.Request(api_url + '/v1/places/' + row['cnes_code'], headers={'Accept': 'application/json'})
+        request = urllib.request.Request(api_url + '/v1/places/' + row['cnes_code'], headers={'Accept': 'application/json', 'User-Agent': USER_AGENT})
         with opener.open(request, timeout=30) as response:
             actual = json.load(response).get('result')
             if response.status != 200 or not isinstance(actual, dict) or any(actual.get(key) != row.get(key) for key in FIELDS):

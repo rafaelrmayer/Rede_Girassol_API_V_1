@@ -34,7 +34,9 @@ def main():
     request = urllib.request.Request(
         args.api_url.rstrip("/") + "/admin/import",
         data=body,
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {args.token}"},
+        headers={"Content-Type": "application/json", "Accept": "application/json",
+                 "User-Agent": "RedeGirassol-CNES-Importer/0.1 (+https://github.com/rafaelrmayer/Rede_Girassol_API_V_1)",
+                 "Authorization": f"Bearer {args.token}"},
         method="POST",
     )
     try:
