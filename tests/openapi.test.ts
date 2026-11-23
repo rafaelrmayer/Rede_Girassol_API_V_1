@@ -57,11 +57,11 @@ describe('public OpenAPI contract', () => {
     expect(await response.json()).toEqual(openapi);
     expect(openapi.openapi).toBe('3.0.2');
   });
-  it('contains eight unique public GET operations and no administrative credentials', () => {
+  it('contains nine unique public GET operations and no administrative credentials', () => {
     const entries = Object.entries(openapi.paths);
-    expect(entries).toHaveLength(8);
+    expect(entries).toHaveLength(9);
     expect(entries.every(([path, value]) => !path.startsWith('/admin/') && Object.keys(value).join() === 'get')).toBe(true);
-    expect(new Set(entries.map(([, value]) => value.get.operationId)).size).toBe(8);
+    expect(new Set(entries.map(([, value]) => value.get.operationId)).size).toBe(9);
     expect(openapi.security).toEqual([]);
     expect(JSON.stringify(openapi)).not.toContain('IMPORT_TOKEN');
   });
@@ -74,7 +74,7 @@ describe('public OpenAPI contract', () => {
       }
     }
   });
-  it.each(['/health', '/sources', '/v1/places', '/v1/operators', '/v1/plans', '/v1/rehabilitation', '/v1/autism-support'])
+  it.each(['/health', '/sources', '/v1/places', '/v1/operators', '/v1/plans', '/v1/rehabilitation', '/v1/autism-support', '/v1/support-guide'])
     ('matches the real empty-database response for %s', async path => {
       const result = await get(path);
       expect(result.status).toBe(200);

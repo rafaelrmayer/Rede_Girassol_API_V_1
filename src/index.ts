@@ -1,3 +1,4 @@
+import { supportGuide } from './support-guide';
 import { listAutismSupport } from './autism-support';
 import { listRehabilitation } from './rehabilitation';
 import rehabilitationCatalog from '../rehabilitation-classifications.json';
@@ -68,6 +69,11 @@ export default {
 
     if (request.method === "GET" && path === "/health") {
       return json({ status: "ok", service: "Rede Girassol API", version: "0.1.0", environment: env.APP_ENV ?? "unknown" });
+    }
+
+    if (request.method === "GET" && path === "/v1/support-guide") {
+      if (url.search) return json({error: "unsupported_parameters", message: "Esta rota não recebe perguntas nem dados pessoais. A pesquisa é feita no navegador."}, 400);
+      return json(supportGuide());
     }
 
     if (request.method === "GET" && path === "/sources") {

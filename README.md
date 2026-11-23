@@ -15,6 +15,10 @@ O objetivo é facilitar a descoberta de informações úteis por meio de uma API
 
 Acesse a [documentação interativa](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/docs), baixe o [OpenAPI JSON](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/openapi.json) ou consulte o [guia da API](docs/API.md). O arquivo [openapi.json](openapi.json) descreve as consultas públicas para integração e futura importação no RapidAPI.
 
+## Encontre apoio · Experimental
+
+Perguntas prontas e busca local por palavras em orientações revisadas sobre acesso ao SUS, crianças/adolescentes, adultos e cuidadores. Mostra fontes e passos curtos, sem enviar o texto pesquisado ao servidor. É um piloto de recuperação documental, sem geração por IA. Veja o [guia do módulo](docs/SUPPORT_GUIDE.md).
+
 ## Autismo e apoio
 
 O painel oferece uma busca própria para serviços com atendimento a pessoas autistas documentado em fontes oficiais revisadas, com público e orientação de acesso. Há também uma consulta independente de reabilitação CNES por modalidade e competência mensal. Cadastro de reabilitação intelectual não confirma, sozinho, atendimento a TEA. Consulte o [guia de configuração, fontes e importação](docs/REHABILITATION.md).
