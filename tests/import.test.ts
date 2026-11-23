@@ -12,7 +12,7 @@ function statement(sql: string, values: any[] = []): any {
     run: async () => sqlite.prepare(sql).run(...values),
     all: async () => ({results: sqlite.prepare(sql).all(...values)}),
     first: async () => sqlite.prepare(sql).get(...values) ?? null,
-    execute: () => sqlite.prepare(sql).run(...values)
+    execute: () => /^SELECT/i.test(sql.trim()) ? {results: sqlite.prepare(sql).all(...values)} : sqlite.prepare(sql).run(...values)
   };
 }
 const record = {cnes_code: '0000001', name: 'Unidade de teste', city: 'Curitiba', state: 'PR'};
@@ -83,5 +83,68 @@ describe('normalized establishment imports', () => {
     sqlite.exec("CREATE TRIGGER fail_history BEFORE INSERT ON import_runs BEGIN SELECT RAISE(ABORT, 'test failure'); END");
     expect((await send()).status).toBe(500);
     expect((await get('/v1/places')).count).toBe(0);
+  });
+});
+
+
+describe('paginated public collections', () => {
+  function seed() {
+    for (let i = 0; i < 6; i++) {
+      sqlite.prepare("INSERT INTO establishments (id,cnes_code,name,city,state) VALUES (?,?,?,?,?)")
+        .run(`id-${i}`, String(i).padStart(7, '0'), 'Mesmo nome', i < 4 ? 'Curitiba' : 'Londrina', 'PR');
+    }
+  }
+  it('keeps count compatible, returns filtered totals and visits stable pages without duplicates', async () => {
+    seed();
+    const first = await get('/v1/places?state=pr&city=Curitiba&limit=2');
+    expect(first).toMatchObject({count: 2, total: 4, pagination: {limit: 2, offset: 0, has_more: true, next_offset: 2}});
+    const second = await get('/v1/places?state=PR&city=Curitiba&limit=2&offset=2');
+    expect(second).toMatchObject({count: 2, total: 4, pagination: {has_more: false, next_offset: null}});
+    expect([...first.results, ...second.results].map(row => row.id)).toEqual(['id-0','id-1','id-2','id-3']);
+  });
+  it('handles empty filters and offsets beyond the last row', async () => {
+    seed();
+    expect(await get('/v1/places?limit=2&offset=30')).toMatchObject({count: 0, total: 6, pagination: {has_more: false, next_offset: null}});
+    expect(await get('/v1/places?q=absent')).toMatchObject({count: 0, total: 0});
+    expect(await get('/v1/places?q=%27%20OR%201%3D1--')).toMatchObject({count: 0, total: 0});
+  });
+  it('preserves default limit 100 and offset zero for existing clients', async () => {
+    seed();
+    expect(await get('/v1/places')).toMatchObject({count: 6, total: 6, pagination: {limit: 100, offset: 0}});
+  });
+  it.each(['limit=0','limit=101','limit=-1','limit=2.5','limit=x','limit=', 'limit=1&limit=2',
+    'offset=-1','offset=2.5','offset=1e2','offset=','offset=9007199254740991','offset=0&offset=1'])
+    ('rejects invalid pagination (%s) on every public collection', async query => {
+      for (const path of ['places','operators','plans']) {
+        const response = await app.fetch(new Request(`https://example.test/v1/${path}?${query}`), env);
+        expect(response.status).toBe(400);
+        expect(await response.json()).toMatchObject({error: 'invalid_pagination'});
+      }
+    });
+  it('paginates operator and product results with their own filters and totals', async () => {
+    for (let i = 0; i < 3; i++) {
+      sqlite.prepare('INSERT INTO operators (id,name) VALUES (?,?)').run(`op-${i}`, 'Operadora fictícia');
+      sqlite.prepare('INSERT INTO products (id,operator_id,name) VALUES (?,?,?)').run(`plan-${i}`, `op-${i}`, 'Produto fictício');
+    }
+    for (const path of ['operators','plans']) {
+      const page = await get(`/v1/${path}?q=fict&limit=2&offset=2`);
+      expect(page).toMatchObject({total: 3, count: 1, pagination: {has_more: false, next_offset: null}});
+    }
+  });
+});
+
+describe('100-record atomic import', () => {
+  const records = Array.from({length: 100}, (_, i) => ({...record, cnes_code: String(i + 1).padStart(7, '0')}));
+  it('persists 100 records and can reimport them without duplicates', async () => {
+    expect((await send(records)).status).toBe(200);
+    expect((await send(records)).status).toBe(200);
+    expect(await get('/v1/places?limit=20')).toMatchObject({count: 20, total: 100});
+    expect((await get('/admin/imports')).imports).toHaveLength(2);
+  });
+  it('rolls back earlier chunks if a later record fails', async () => {
+    sqlite.exec("CREATE TRIGGER fail_late BEFORE INSERT ON establishments WHEN NEW.cnes_code='0000099' BEGIN SELECT RAISE(ABORT, 'test failure'); END");
+    expect((await send(records)).status).toBe(500);
+    expect((await get('/v1/places')).total).toBe(0);
+    expect((await get('/admin/imports')).imports).toEqual([]);
   });
 });

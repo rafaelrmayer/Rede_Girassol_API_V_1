@@ -109,6 +109,8 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     .search-btn:hover { background: var(--green-950); }
     .table-panel { overflow: hidden; }
     .table-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-top: 1px solid var(--line); font-size: 12px; }
+    button:disabled { opacity: .5; cursor: default; }
     .table-scroll { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 620px; text-align: left; }
     th { padding: 12px 15px; color: #718078; background: #f8faf7; font-size: 10px; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
@@ -186,7 +188,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
 
       <section class="view active" id="overviewView" aria-labelledby="viewTitle">
         <p class="intro">Um ponto de consulta para informações públicas de saúde. O painel exibe somente o que a API efetivamente retorna; ausência de registros e falhas de consulta são informadas sem preencher a tela com exemplos.</p>
-        <div class="section-head"><div><h2>Resumo da base consultada</h2><p>Quantidade retornada pelos endpoints nesta consulta. Cada endpoint limita a resposta a até 100 registros.</p></div></div>
+        <div class="section-head"><div><h2>Resumo da base consultada</h2><p>Quantidade disponível na base atual. Os totais representam os registros importados neste banco; não são a cobertura nacional do CNES.</p></div></div>
         <div class="cards">
           <article class="metric"><div class="metric-top"><span>Estabelecimentos</span><span class="metric-icon" aria-hidden="true">✚</span></div><div class="metric-value" id="placesCount">—</div><div class="metric-note" id="placesNote">Aguardando consulta à API</div></article>
           <article class="metric"><div class="metric-top"><span>Operadoras</span><span class="metric-icon" aria-hidden="true">▦</span></div><div class="metric-value" id="operatorsCount">—</div><div class="metric-note" id="operatorsNote">Aguardando consulta à API</div></article>
@@ -205,7 +207,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
           <label class="search-wrap" style="flex:0 1 110px"><span class="sr-only">Filtrar por UF</span><input id="placesState" type="text" maxlength="2" placeholder="UF" autocomplete="off"></label>
           <button class="search-btn" type="submit">Pesquisar</button>
         </form>
-        <div class="panel table-panel"><div class="table-meta"><span id="placesMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="placesResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use os filtros para consultar os registros disponíveis.</div></div></div>
+        <div class="panel table-panel"><div class="table-meta"><span id="placesMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="placesResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use os filtros para consultar os registros disponíveis.</div></div><nav class="pager" aria-label="Paginação de estabelecimentos"><button class="refresh" type="button" id="placesPrevious" disabled>Anterior</button><span id="placesPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="placesNext" disabled>Próxima</button></nav></div>
       </section>
 
       <section class="view" id="operatorsView" aria-labelledby="viewTitle">
@@ -214,7 +216,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
           <label class="search-wrap"><span class="sr-only">Pesquisar operadora</span><span class="search-symbol" aria-hidden="true">⌕</span><input id="operatorsQuery" type="search" placeholder="Nome da operadora" autocomplete="off"></label>
           <button class="search-btn" type="submit">Pesquisar</button>
         </form>
-        <div class="panel table-panel"><div class="table-meta"><span id="operatorsMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="operatorsResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use a pesquisa para consultar os registros disponíveis.</div></div></div>
+        <div class="panel table-panel"><div class="table-meta"><span id="operatorsMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="operatorsResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use a pesquisa para consultar os registros disponíveis.</div></div><nav class="pager" aria-label="Paginação de operadoras"><button class="refresh" type="button" id="operatorsPrevious" disabled>Anterior</button><span id="operatorsPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="operatorsNext" disabled>Próxima</button></nav></div>
       </section>
 
       <section class="view" id="plansView" aria-labelledby="viewTitle">
@@ -223,7 +225,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
           <label class="search-wrap"><span class="sr-only">Pesquisar plano</span><span class="search-symbol" aria-hidden="true">⌕</span><input id="plansQuery" type="search" placeholder="Nome do produto ou plano" autocomplete="off"></label>
           <button class="search-btn" type="submit">Pesquisar</button>
         </form>
-        <div class="panel table-panel"><div class="table-meta"><span id="plansMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="plansResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use a pesquisa para consultar os registros disponíveis.</div></div></div>
+        <div class="panel table-panel"><div class="table-meta"><span id="plansMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="plansResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use a pesquisa para consultar os registros disponíveis.</div></div><nav class="pager" aria-label="Paginação de planos"><button class="refresh" type="button" id="plansPrevious" disabled>Anterior</button><span id="plansPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="plansNext" disabled>Próxima</button></nav></div>
       </section>
 
       <section class="view" id="sourcesView" aria-labelledby="viewTitle">
@@ -234,7 +236,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
           <article class="panel about-card"><h3>Origem e atualização</h3><p>Exibir a fonte e a data de referência quando estiverem disponíveis. Não presumir que um registro está atualizado quando a data não foi fornecida.</p></article>
           <article class="panel about-card"><h3>Vínculo com rede credenciada</h3><p>Não inferir que um estabelecimento atende determinado plano apenas por constar no CNES ou por existir um produto associado a uma operadora.</p></article>
           <article class="panel about-card"><h3>Ausência de registros</h3><p>Uma consulta vazia deve continuar vazia. Não inserir exemplos ou dados demonstrativos em resultados apresentados como se fossem oficiais.</p></article>
-          <article class="panel about-card"><h3>Limites desta versão</h3><p>A integração, normalização e persistência dos arquivos oficiais CNES e ANS ainda precisam ser implementadas e testadas.</p></article>
+          <article class="panel about-card"><h3>Limites desta versão</h3><p>A carga do CNES é manual e limitada aos municípios e páginas importados. Atualização automática, cobertura nacional e integração ANS continuam pendentes.</p></article>
         </div>
       </section>
 
@@ -291,7 +293,6 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       setText("apiStatus", label);
     }
     function countLabel(count) {
-      if (count === 100) return "100 registros retornados (limite da consulta)";
       return count + (count === 1 ? " registro retornado" : " registros retornados");
     }
     function updateMetric(kind, data, error) {
@@ -300,16 +301,17 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         setText(kind + "Note", "Consulta indisponível");
         return;
       }
-      const count = Number(data && data.count);
+      const count = Number(data && data.total);
       if (!Number.isFinite(count)) {
         setText(kind + "Count", "—");
         setText(kind + "Note", "A API não informou a quantidade");
         return;
       }
       setText(kind + "Count", String(count));
-      setText(kind + "Note", countLabel(count));
+      setText(kind + "Note", "Registros importados na base atual");
     }
     function sourceLabel(status) {
+      if (status === "partial") return "Integração parcial";
       if (status === "mapping_pending") return "Integração pendente";
       if (status === "implemented") return "Integração implementada";
       if (status === "validated") return "Integração validada";
@@ -338,6 +340,12 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         id.className = "panel-copy";
         id.textContent = "Identificador: " + safeValue(source.id);
         card.append(top, id);
+        if (source.scope) {
+          const scope = document.createElement("p");
+          scope.className = "panel-copy";
+          scope.textContent = source.scope;
+          card.appendChild(scope);
+        }
         if (source.url) {
           const link = document.createElement("a");
           link.className = "source-link";
@@ -392,64 +400,80 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       const target = byId(targetId);
       target.replaceChildren(errorBox(error.message || "Falha ao consultar a API."));
     }
-    async function loadPlaces(query) {
-      setText("placesMeta", "Consultando…");
-      const params = new URLSearchParams();
-      if (query && query.q) params.set("q", query.q);
-      if (query && query.city) params.set("city", query.city);
-      if (query && query.state) params.set("state", query.state.toUpperCase());
-      try {
-        const data = await api("/v1/places" + (params.toString() ? "?" + params.toString() : ""));
-        const rows = Array.isArray(data.results) ? data.results : [];
-        setText("placesMeta", countLabel(Number(data.count) || rows.length));
-        renderTable("placesResults", rows, [
-          { label: "Estabelecimento", value: "name", primary: true },
-          { label: "CNES", value: "cnes_code" },
-          { label: "Cidade / UF", value: function (r) { return [r.city, r.state].filter(Boolean).join(" / "); } },
-          { label: "Endereço", value: "address" },
-          { label: "Fonte", value: "source" },
-          { label: "Atualização da fonte", value: "source_updated_at" }
-        ], "Nenhum registro disponível", "A consulta foi concluída, mas a base não retornou estabelecimentos com esses filtros.");
-      } catch (error) { showCollectionError("placesMeta", "placesResults", error); }
+    const pageSize = 20;
+    const collections = {
+      places: { endpoint: "/v1/places", emptyTitle: "Nenhum registro disponível", columns: [
+        { label: "Estabelecimento", value: "name", primary: true },
+        { label: "CNES", value: "cnes_code" },
+        { label: "Cidade / UF", value: function (r) { return [r.city, r.state].filter(Boolean).join(" / "); } },
+        { label: "Endereço", value: "address" }, { label: "Fonte", value: "source" },
+        { label: "Atualização da fonte", value: "source_updated_at" }
+      ] },
+      operators: { endpoint: "/v1/operators", emptyTitle: "Nenhuma operadora disponível", columns: [
+        { label: "Operadora", value: "name", primary: true }, { label: "Registro ANS", value: "ans_code" },
+        { label: "Situação cadastrada", value: "status" }, { label: "Atualização da fonte", value: "source_updated_at" }
+      ] },
+      plans: { endpoint: "/v1/plans", emptyTitle: "Nenhum produto disponível", columns: [
+        { label: "Produto / plano", value: "name", primary: true }, { label: "Registro do produto", value: "registration_code" },
+        { label: "Operadora associada na base", value: "operator_name" }, { label: "Situação cadastrada", value: "status" }
+      ] }
+    };
+    const pages = {};
+    Object.keys(collections).forEach(function (kind) {
+      pages[kind] = { offset: 0, nextOffset: null, filters: {}, version: 0, valid: false, loading: false };
+      byId(kind + "Previous").addEventListener("click", function () {
+        const page = pages[kind];
+        loadCollection(kind, page.filters, Math.max(0, page.offset - pageSize));
+      });
+      byId(kind + "Next").addEventListener("click", function () {
+        const page = pages[kind];
+        if (page.nextOffset !== null) loadCollection(kind, page.filters, page.nextOffset);
+      });
+    });
+    function updatePager(kind) {
+      const page = pages[kind];
+      byId(kind + "Previous").disabled = page.loading || !page.valid || page.offset === 0;
+      byId(kind + "Next").disabled = page.loading || !page.valid || page.nextOffset === null;
     }
-    async function loadOperators(query) {
-      setText("operatorsMeta", "Consultando…");
-      const params = new URLSearchParams();
-      if (query) params.set("q", query);
+    async function loadCollection(kind, filters, offset) {
+      const page = pages[kind];
+      const version = ++page.version;
+      page.loading = true;
+      updatePager(kind);
+      setText(kind + "Meta", "Consultando…");
+      const params = new URLSearchParams({ limit: String(pageSize), offset: String(offset) });
+      Object.keys(filters).forEach(function (key) { if (filters[key]) params.set(key, filters[key]); });
       try {
-        const data = await api("/v1/operators" + (params.toString() ? "?" + params.toString() : ""));
+        const data = await api(collections[kind].endpoint + "?" + params.toString());
+        if (version !== page.version) return;
         const rows = Array.isArray(data.results) ? data.results : [];
-        setText("operatorsMeta", countLabel(Number(data.count) || rows.length));
-        renderTable("operatorsResults", rows, [
-          { label: "Operadora", value: "name", primary: true },
-          { label: "Registro ANS", value: "ans_code" },
-          { label: "Situação cadastrada", value: "status" },
-          { label: "Atualização da fonte", value: "source_updated_at" }
-        ], "Nenhuma operadora disponível", "A consulta foi concluída, mas a base não retornou operadoras com esse filtro.");
-      } catch (error) { showCollectionError("operatorsMeta", "operatorsResults", error); }
+        if (!data.pagination || !Number.isSafeInteger(data.total)) throw new Error("A API não informou a paginação.");
+        page.offset = offset;
+        page.filters = filters;
+        page.nextOffset = data.pagination.next_offset;
+        page.valid = true;
+        setText(kind + "Meta", countLabel(rows.length) + " nesta página · " + data.total + " na consulta");
+        setText(kind + "Page", rows.length ? (offset + 1) + "–" + (offset + rows.length) + " de " + data.total : "0 registros nesta página · " + data.total + " na consulta");
+        renderTable(kind + "Results", rows, collections[kind].columns, collections[kind].emptyTitle,
+          "A consulta foi concluída, mas a base não retornou registros para esta página e filtros.");
+      } catch (error) {
+        if (version !== page.version) return;
+        page.valid = false;
+        setText(kind + "Page", "Consulta indisponível");
+        showCollectionError(kind + "Meta", kind + "Results", error);
+      } finally {
+        if (version === page.version) { page.loading = false; updatePager(kind); }
+      }
     }
-    async function loadPlans(query) {
-      setText("plansMeta", "Consultando…");
-      const params = new URLSearchParams();
-      if (query) params.set("q", query);
-      try {
-        const data = await api("/v1/plans" + (params.toString() ? "?" + params.toString() : ""));
-        const rows = Array.isArray(data.results) ? data.results : [];
-        setText("plansMeta", countLabel(Number(data.count) || rows.length));
-        renderTable("plansResults", rows, [
-          { label: "Produto / plano", value: "name", primary: true },
-          { label: "Registro do produto", value: "registration_code" },
-          { label: "Operadora associada na base", value: "operator_name" },
-          { label: "Situação cadastrada", value: "status" }
-        ], "Nenhum produto disponível", "A consulta foi concluída, mas a base não retornou produtos com esse filtro.");
-      } catch (error) { showCollectionError("plansMeta", "plansResults", error); }
-    }
+    function loadPlaces(query) { return loadCollection("places", query || {}, 0); }
+    function loadOperators(query) { return loadCollection("operators", {q: query}, 0); }
+    function loadPlans(query) { return loadCollection("plans", {q: query}, 0); }
     async function refreshOverview() {
       showApiStatus(false, "Consultando API…");
       const healthPromise = api("/health");
-      const placesPromise = api("/v1/places");
-      const operatorsPromise = api("/v1/operators");
-      const plansPromise = api("/v1/plans");
+      const placesPromise = api("/v1/places?limit=1");
+      const operatorsPromise = api("/v1/operators?limit=1");
+      const plansPromise = api("/v1/plans?limit=1");
       const sourcesPromise = api("/sources");
       const results = await Promise.allSettled([healthPromise, placesPromise, operatorsPromise, plansPromise, sourcesPromise]);
       const health = results[0];

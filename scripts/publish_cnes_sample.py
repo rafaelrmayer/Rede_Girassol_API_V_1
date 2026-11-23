@@ -29,8 +29,8 @@ def checked_sample(payload, metadata):
     if not isinstance(payload, dict) or payload.get('source') != 'cnes' or payload.get('entity') != 'establishments':
         raise PublicationError('Esperada amostra CNES normalizada de estabelecimentos')
     records = payload.get('records')
-    if not isinstance(records, list) or not 1 <= len(records) <= 20:
-        raise PublicationError('A amostra deve conter de 1 a 20 registros')
+    if not isinstance(records, list) or not 1 <= len(records) <= 100:
+        raise PublicationError('A amostra deve conter de 1 a 100 registros')
     if not isinstance(metadata, dict) or metadata.get('normalized_sha256') != digest(payload) or metadata.get('records') != len(records):
         raise PublicationError('Amostra não corresponde aos metadados de preparação')
     seen = set()

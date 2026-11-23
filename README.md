@@ -72,7 +72,7 @@ rede-girassol-api/
 └── wrangler.toml
 ```
 
-## Endpoints previstos na V0.1
+## Endpoints disponíveis na V0.1
 
 | Método | Endpoint | Objetivo |
 |---|---|---|
@@ -98,7 +98,7 @@ A primeira interface visual é servida pelo próprio Cloudflare Worker:
 
 O painel consulta somente os endpoints da API (`/health`, `/sources`, `/v1/places`, `/v1/operators` e `/v1/plans`). Não importa nem lê os arquivos de demonstração em `fixtures/`.
 
-As telas exibem os registros realmente retornados pelo banco conectado à API. Quando não houver resultados, a interface informa a ausência de registros; em caso de falha, informa que a consulta não pôde ser concluída. As listas respeitam o limite atual de até 100 registros por endpoint e não representam necessariamente o total armazenado.
+As telas exibem os registros realmente retornados pelo banco conectado à API. Quando não houver resultados, a interface informa a ausência de registros; em caso de falha, informa que a consulta não pôde ser concluída. As listas têm páginas de até 100 registros na API e 20 no painel. O campo `total` informa quantos registros correspondem aos filtros; a visão geral mostra os totais importados, sem afirmar cobertura nacional.
 
 **Importante:** esta interface é uma entrega de desenvolvimento. A integração real, o mapeamento e a validação das fontes CNES e ANS continuam pendentes. A interface não deve ser implantada em produção antes da revisão técnica, execução dos testes e validação do ambiente.
 
@@ -223,7 +223,7 @@ Os testes usam a migração real e SQLite em memória para validar persistência
 
 ## Primeira amostra real do CNES
 
-O preparador `scripts/prepare_cnes_sample.py` consulta uma única página de até 20 estabelecimentos na [API oficial do Ministério da Saúde](https://apidadosabertos.saude.gov.br/v1). O formato mapeado é **`GET /cnes/estabelecimentos`**, com envelope `estabelecimentos`; não se trata de um conversor genérico para todos os arquivos ZIP ou para a rota distinta `/assistencia-a-saude/cnes-estabelecimentos`.
+O preparador `scripts/prepare_cnes_sample.py` consulta de uma a cinco páginas de até 20 estabelecimentos cada (máximo de 100 por execução) na [API oficial do Ministério da Saúde](https://apidadosabertos.saude.gov.br/v1). O formato mapeado é **`GET /cnes/estabelecimentos`**, com envelope `estabelecimentos`; não se trata de um conversor genérico para todos os arquivos ZIP ou para a rota distinta `/assistencia-a-saude/cnes-estabelecimentos`.
 
 Foi conferida uma amostra de três estabelecimentos de Curitiba em 23/11/2026. Os campos da API não incluem o nome do município: a conversão cruza `codigo_municipio` de seis dígitos com os primeiros seis dígitos do ID municipal de sete dígitos da [API de localidades do IBGE](https://servicodados.ibge.gov.br/api/docs/localidades). A UF também precisa corresponder. Falta de correspondência interrompe a preparação.
 
@@ -291,7 +291,7 @@ Use a ação manual **Preparar amostra CNES** no GitHub:
 
 O workflow aparece para execução manual depois que este arquivo estiver na branch principal. É necessário entrar no GitHub com permissão de escrita no repositório para dispará-lo. Se a execução ainda não aparecer na lista, atualize a página.
 
-A ação roda os testes Python do conversor, consulta CNES e IBGE, valida e normaliza a amostra e disponibiliza os dois arquivos por **7 dias**. Os valores são validados pelo preparador: UF válida, município de seis dígitos correspondente à UF e quantidade de 1 a 20. Não exige tokens administrativos nem credenciais do Cloudflare. Não importa os dados em banco, não cria commits e não publica o Worker.
+A ação roda os testes Python do conversor, consulta CNES e IBGE, valida e normaliza a amostra e disponibiliza os dois arquivos por **7 dias**. Os valores são validados pelo preparador: UF válida, município de seis dígitos correspondente à UF de 1 a 20 registros por página, de 1 a 5 páginas e página inicial entre 0 e 10000. Não exige tokens administrativos nem credenciais do Cloudflare. Não importa os dados em banco, não cria commits e não publica o Worker.
 
 Se houver falha ou indisponibilidade da fonte oficial, a execução ficará vermelha; abra a etapa **Buscar e preparar amostra oficial** para conferir a mensagem. Corrija os filtros, se necessário, ou tente novamente mais tarde. Um arquivo só é publicado como artifact após a preparação bem-sucedida.
 
@@ -312,7 +312,7 @@ O primeiro painel pode estar vazio: gerar e baixar o artifact CNES não importa 
 
 ## Importar a amostra no banco remoto pelo GitHub Actions
 
-A ação manual **Importar amostra CNES na API** prepara uma **nova amostra** na fonte oficial durante a execução e grava os registros na API `https://rede-girassol-api-v-1.rafael10mayer.workers.dev`. Ela não usa o ZIP baixado anteriormente. O arquivo enviado, os metadados e um comprovante da conferência ficam disponíveis em **Artifacts** por sete dias.
+A ação manual **Importar amostra CNES na API** prepara uma **nova carga limitada** na fonte oficial durante a execução e grava os registros na API `https://rede-girassol-api-v-1.rafael10mayer.workers.dev`. Ela não usa o ZIP baixado anteriormente. O arquivo enviado, os metadados e um comprovante da conferência ficam disponíveis em **Artifacts** por sete dias.
 
 ### Configurar o token uma única vez
 
@@ -346,3 +346,38 @@ Após atualizar o código de um workflow, inicie uma **nova execução em Run wo
 A preparação identifica no log o domínio da fonte consultada e tenta cada leitura até três vezes, com timeout de 30 segundos por tentativa e pausas de um e dois segundos. Somente timeouts, falhas de conexão/leitura e HTTP `429`, `500`, `502`, `503` ou `504` recebem novas tentativas. Erros permanentes de acesso, JSON inválido e respostas maiores que o limite interrompem a preparação.
 
 Se a fonte continuar indisponível, a execução termina com o domínio e o motivo resumido do erro, sem avançar ao envio para o banco. Essa repetição vale apenas para as consultas GET das fontes oficiais; o POST de importação continua sem repetição automática. Os dois workflows de CNES usam o mesmo preparador e recebem esse comportamento.
+
+## Paginação das consultas públicas
+
+As rotas `/v1/places`, `/v1/operators` e `/v1/plans` aceitam:
+
+| Parâmetro | Regra |
+|---|---|
+| `limit` | Inteiro de 1 a 100; padrão 100 para manter compatibilidade |
+| `offset` | Quantidade de registros a pular, começando em 0; inteiro seguro até `Number.MAX_SAFE_INTEGER - 100` |
+
+Exemplo: `/v1/places?state=PR&city=Curitiba&limit=20&offset=20` retorna a segunda página de 20 estabelecimentos correspondentes aos filtros. **O offset da nossa API conta registros; o offset da fonte CNES conta páginas.**
+
+A resposta mantém `results` e `count` (quantidade nesta página) e acrescenta `total` (quantidade correspondente aos mesmos filtros), além de `pagination.limit`, `pagination.offset`, `pagination.has_more` e `pagination.next_offset`. Quando não há próxima página, `next_offset` é `null`. Uma página além do fim retorna lista vazia, preservando o total real dos filtros. Parâmetros vazios, repetidos, negativos, fracionários ou fora dos limites retornam HTTP `400` / `invalid_pagination`.
+
+As consultas ordenam por nome e ID, evitando que nomes iguais troquem de posição entre páginas quando a base permanece igual. Contagem e página usam um único batch de leitura D1. Alterações na base entre requisições diferentes ainda podem deslocar registros na paginação por offset.
+
+O painel usa 20 registros por página e oferece **Anterior/Próxima**, preservando os filtros da consulta. Uma nova pesquisa retorna à primeira página. Erros e respostas antigas de pesquisas concorrentes não substituem resultados mais recentes nem são apresentados como uma base vazia.
+
+## Ampliar a carga CNES pelo navegador
+
+Os workflows **Preparar amostra CNES** e **Importar amostra CNES na API** agora incluem os campos:
+
+- **Registros por página:** de 1 a 20 (`limit`).
+- **Quantidade de páginas:** de 1 a 5 (`pages`), totalizando até 100 registros por execução.
+- **Página inicial CNES:** de 0 a 10000 (`start_page`).
+
+Para ampliar Curitiba, inicie uma nova execução de **Importar amostra CNES na API**, na `main`, com **UF 41**, **município 410690**, **20 registros por página**, **5 páginas** e **página inicial 0**. Isso insere ou atualiza até 100 estabelecimentos, incluindo os CNES já presentes, sem duplicá-los. A quantidade retornada pode ser menor se a fonte acabar antes.
+
+Os metadados do artifact registram cada página consultada, URL, contagem e hash, além de `source_page_size`, `start_page`, `requested_pages`, `source_exhausted` e `next_source_page`. Para continuar, use `next_source_page` como página inicial e mantenha o mesmo número de registros por página. Se for `null`, a fonte retornou uma página curta ou vazia e a leitura chegou ao fim naquele momento. Os índices e a ordem da fonte podem mudar com atualizações do CNES; as cargas não são snapshots nacionais.
+
+O preparador consulta o IBGE uma vez, valida todos os registros e interrompe o lote se encontrar CNES duplicado entre páginas, município incompatível ou falha em qualquer página. Uma página vazia após páginas válidas encerra a carga mantendo os registros já preparados; uma primeira página vazia não gera arquivo de importação. Somente após a preparação completa ocorre o envio único à API.
+
+A API grava até 100 registros em uma transação: grupos de dez linhas por comando SQL, com 80 parâmetros no máximo por comando, e uma entrada de histórico no mesmo batch. Falha em qualquer grupo ou no histórico desfaz o lote inteiro. Essa atomicidade não cobre as consultas de conferência posteriores: se elas falharem, confira o painel e o histórico antes de repetir. Os workflows têm até 15 minutos para concluir.
+
+O CNES aparece em `/sources` e no painel como **integração parcial**. Os totais descrevem somente os estabelecimentos importados; não há sincronização automática, remoção de unidades posteriormente desativadas, comprovação de rede credenciada ou garantia de cobertura integral do município. A integração ANS continua pendente.

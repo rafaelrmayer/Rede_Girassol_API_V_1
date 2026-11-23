@@ -49,8 +49,8 @@ def text(value, field, maximum, required=False):
 def normalize(payload, municipalities):
     if not isinstance(payload, dict) or not isinstance(payload.get('estabelecimentos'), list):
         raise ValueError('Esperada resposta CNES com lista estabelecimentos')
-    if not 1 <= len(payload['estabelecimentos']) <= 20:
-        raise ValueError('Amostra deve conter entre 1 e 20 estabelecimentos')
+    if not 1 <= len(payload['estabelecimentos']) <= 100:
+        raise ValueError('Carga deve conter entre 1 e 100 estabelecimentos')
     if not isinstance(municipalities, list):
         raise ValueError('Esperada lista de municípios IBGE')
     cities = {}
@@ -117,6 +117,38 @@ def download(url):
         time.sleep(attempt)
 
 
+def fetch_pages(uf, municipality, limit=20, pages=1, start_page=0):
+    if uf not in STATES or not re.fullmatch(r'[0-9]{6}', municipality) or not municipality.startswith(str(uf)):
+        raise ValueError('Município ou UF inválido')
+    if not 1 <= limit <= 20 or not 1 <= pages <= 5 or not 0 <= start_page <= 10000:
+        raise ValueError('Use de 1 a 20 registros por página, de 1 a 5 páginas e página inicial de 0 a 10000')
+    records, consulted = [], []
+    exhausted = False
+    for page in range(start_page, start_page + pages):
+        url = CNES_URL + '?' + urllib.parse.urlencode(dict(codigo_uf=uf, codigo_municipio=municipality, limit=limit, offset=page, status=1))
+        payload = download(url)
+        rows = payload.get('estabelecimentos') if isinstance(payload, dict) else None
+        if not isinstance(rows, list):
+            raise ValueError('CNES: resposta sem lista estabelecimentos')
+        if len(rows) > limit:
+            raise ValueError('CNES: a fonte excedeu o limite solicitado')
+        for row in rows:
+            if not isinstance(row, dict) or code(row.get('codigo_municipio'), 6, 'codigo_municipio') != municipality:
+                raise ValueError('CNES: registro de outro município ou formato inválido')
+        consulted.append(dict(page=page, url=url, records=len(rows), sha256=digest(payload)))
+        records.extend(rows)
+        if len(rows) < limit:
+            exhausted = True
+            break
+    if not records:
+        raise ValueError('CNES: nenhuma unidade retornada na página inicial; nenhum lote foi preparado')
+    return {'estabelecimentos': records}, dict(
+        mode='download', cnes_url=consulted[0]['url'], source_pages=consulted,
+        source_page_size=limit, start_page=start_page, requested_pages=pages,
+        next_source_page=None if exhausted else start_page + len(consulted),
+        source_exhausted=exhausted, requested_status=1)
+
+
 def digest(payload):
     return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
 
@@ -129,14 +161,18 @@ def main():
     parser.add_argument('--state-code', type=int, choices=sorted(STATES), help='Código IBGE da UF; PR=41')
     parser.add_argument('--municipality', help='Código do município no CNES, com seis dígitos; Curitiba=410690')
     parser.add_argument('--limit', type=int, default=3, choices=range(1,21))
+    parser.add_argument('--pages', type=int, default=1, choices=range(1,6), help='Páginas CNES a consultar, até 5')
+    parser.add_argument('--start-page', type=int, default=0, help='Página inicial CNES (0 a 10000)')
     args = parser.parse_args()
+    if not 0 <= args.start_page <= 10000:
+        parser.error('--start-page deve estar entre 0 e 10000')
     target = Path(args.output)
     metadata_target = target.with_suffix(target.suffix + '.metadata.json')
     if target.exists() or metadata_target.exists():
         parser.error('Arquivo de saída ou metadados já existe; escolha outro nome')
     if bool(args.input) != bool(args.municipalities):
         parser.error('--input e --municipalities devem ser usados juntos')
-    if args.input and (args.state_code is not None or args.municipality is not None):
+    if args.input and (args.state_code is not None or args.municipality is not None or args.pages != 1 or args.start_page != 0):
         parser.error('Use arquivos offline ou filtros para download, sem misturá-los')
     try:
         if args.input:
@@ -148,16 +184,10 @@ def main():
                 parser.error('Para download, informe --state-code e --municipality (seis dígitos)')
             if not args.municipality.startswith(str(args.state_code)):
                 parser.error('Código do município incompatível com a UF')
-            url = CNES_URL + '?' + urllib.parse.urlencode(dict(codigo_uf=args.state_code, codigo_municipio=args.municipality, limit=args.limit, offset=0, status=1))
+            payload, provenance = fetch_pages(args.state_code, args.municipality, args.limit, args.pages, args.start_page)
             ibge_url = IBGE_URL.format(uf=args.state_code)
-            payload, municipalities = download(url), download(ibge_url)
-            # Do not trust upstream filtering silently.
-            for row in payload.get('estabelecimentos', []):
-                if code(row.get('codigo_municipio'), 6, 'codigo_municipio') != args.municipality:
-                    raise ValueError('A API retornou município diferente do solicitado')
-            if len(payload.get('estabelecimentos', [])) > args.limit:
-                raise ValueError('A API excedeu o limite solicitado')
-            provenance = {'mode': 'download', 'cnes_url': url, 'ibge_url': ibge_url, 'requested_status': 1}
+            municipalities = download(ibge_url)
+            provenance['ibge_url'] = ibge_url
         normalized = normalize(payload, municipalities)
         metadata = dict(provenance, prepared_at=datetime.now(timezone.utc).isoformat(),
                         cnes_response_sha256=digest(payload), ibge_response_sha256=digest(municipalities),

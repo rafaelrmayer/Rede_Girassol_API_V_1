@@ -14,9 +14,19 @@ on:
         default: '410690'
         type: string
       limit:
-        description: 'Quantidade a gravar no banco (1 a 20)'
+        description: 'Registros por página CNES (1 a 20)'
         required: true
         default: '3'
+        type: string
+      pages:
+        description: 'Quantidade de páginas (1 a 5; até 100 registros no total)'
+        required: true
+        default: '1'
+        type: string
+      start_page:
+        description: 'Página inicial CNES (0 a 10000); mantenha o tamanho de página ao continuar'
+        required: true
+        default: '0'
         type: string
 
 permissions:
@@ -31,7 +41,7 @@ jobs:
     name: Importar e conferir no banco remoto
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,11 +65,15 @@ jobs:
           CNES_STATE_CODE: ${{ inputs.state_code }}
           CNES_MUNICIPALITY: ${{ inputs.municipality }}
           CNES_LIMIT: ${{ inputs.limit }}
+          CNES_PAGES: ${{ inputs.pages }}
+          CNES_START_PAGE: ${{ inputs.start_page }}
         run: |
           python3 scripts/prepare_cnes_sample.py \
             --state-code "$CNES_STATE_CODE" \
             --municipality "$CNES_MUNICIPALITY" \
             --limit "$CNES_LIMIT" \
+            --pages "$CNES_PAGES" \
+            --start-page "$CNES_START_PAGE" \
             --output data/cnes-amostra.json
       - name: Gravar na API e conferir cada estabelecimento
         env:
