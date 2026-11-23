@@ -5,7 +5,7 @@ compatibility_date = "2026-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "rede-girassol-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "df5e66ae-bffb-4ab8-ad78-8f924a21ed81"
 migrations_dir = "migrations"
 
 [vars]
