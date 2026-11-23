@@ -1,0 +1,119 @@
+{
+  "mode": "document_retrieval",
+  "experimental": true,
+  "notice": "Orientações resumidas de fontes oficiais, sem geração por IA. O piloto aborda acesso a serviços para pessoas autistas; não avalia diagnóstico, tratamento ou disponibilidade de vagas.",
+  "documents": [
+    {
+      "id": "access",
+      "title": "Por onde começar e como conseguir encaminhamento?",
+      "keywords": [
+        "começar",
+        "comecar",
+        "iniciar",
+        "encaminhamento",
+        "encaminhar",
+        "acesso",
+        "ubs",
+        "unidade",
+        "sus",
+        "conseguir",
+        "procurar"
+      ],
+      "scope": "Orientação geral do SUS; o fluxo local depende da rede do município.",
+      "summary": "Procure a Unidade Básica de Saúde de referência. A equipe faz o acolhimento e orienta os encaminhamentos necessários.",
+      "steps": [
+        "Procure sua Unidade Básica de Saúde de referência.",
+        "Peça orientação sobre o acesso à rede de atendimento a pessoas autistas.",
+        "Confirme com a equipe os critérios e o próximo passo no seu município."
+      ],
+      "source_title": "Ministério da Saúde — Perguntas frequentes sobre autismo",
+      "source_url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/a/autismo/faq",
+      "source_published_on": "2025-08-26",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21"
+    },
+    {
+      "id": "children",
+      "title": "Onde buscar apoio para crianças e adolescentes em Curitiba?",
+      "keywords": [
+        "criança",
+        "crianças",
+        "infantil",
+        "filho",
+        "filha",
+        "adolescente",
+        "adolescentes",
+        "curitiba",
+        "encantar",
+        "onde",
+        "serviço",
+        "serviços",
+        "atendimento"
+      ],
+      "scope": "Rede municipal de Curitiba; crianças e adolescentes. Não se aplica automaticamente a outras cidades ou a adultos.",
+      "summary": "A Prefeitura descreve o Encantar e prestadores parceiros para cuidado de crianças com TEA. A entrada na rede começa pela unidade de saúde de referência.",
+      "steps": [
+        "Converse com a unidade de saúde de referência sobre avaliação e encaminhamento.",
+        "Consulte as instituições documentadas em Autismo e apoio.",
+        "Confirme público, critérios e disponibilidade com a rede municipal."
+      ],
+      "source_title": "Prefeitura de Curitiba — Atendimento a crianças autistas e apoio aos cuidadores",
+      "source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
+      "source_published_on": "2025-04-02",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21"
+    },
+    {
+      "id": "adults",
+      "title": "E para uma pessoa adulta?",
+      "keywords": [
+        "adulto",
+        "adultos",
+        "adulta",
+        "adultas",
+        "maior",
+        "idade",
+        "idoso",
+        "idosa"
+      ],
+      "scope": "Lacuna do catálogo atual e orientação geral de acesso ao SUS.",
+      "summary": "Este piloto ainda não documentou serviços específicos para adultos. Isso não significa que não existam. Não use a lista infantil como confirmação de atendimento para adultos.",
+      "steps": [
+        "Procure a Unidade Básica de Saúde de referência para orientação sobre a rede local.",
+        "Confirme explicitamente a faixa etária aceita pelo serviço antes de se deslocar."
+      ],
+      "source_title": "Ministério da Saúde — Orientação geral de acesso; a lacuna é do catálogo Rede Girassol",
+      "source_url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/a/autismo/faq",
+      "source_published_on": "2025-08-26",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21"
+    },
+    {
+      "id": "caregivers",
+      "title": "Como buscar apoio para pais e cuidadores em Curitiba?",
+      "keywords": [
+        "pais",
+        "mãe",
+        "mães",
+        "pai",
+        "cuidador",
+        "cuidadores",
+        "família",
+        "familia",
+        "responsável",
+        "grupo"
+      ],
+      "scope": "Programa municipal de Curitiba descrito na publicação de abril de 2025; confirme a oferta atual.",
+      "summary": "A Prefeitura descreve grupos de apoio e orientação para pais e cuidadores. A orientação é conversar com a equipe da unidade de saúde da região onde a família reside.",
+      "steps": [
+        "Converse com a equipe da unidade de saúde de referência.",
+        "Pergunte sobre grupos para pais e cuidadores e confirme a programação atual."
+      ],
+      "source_title": "Prefeitura de Curitiba — Apoio aos pais e cuidadores",
+      "source_url": "https://www.curitiba.pr.gov.br/noticias/saude-de-curitiba-oferece-atendimento-a-criancas-autistas-e-apoio-aos-pais-e-cuidadores/76757",
+      "source_published_on": "2025-04-02",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21"
+    }
+  ]
+}

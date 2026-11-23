@@ -4,7 +4,7 @@
 - [Definição OpenAPI JSON](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/openapi.json)
 - [Arquivo canônico no repositório](../openapi.json)
 
-A documentação fica disponível após o deploy da versão que inclui essas rotas. A definição usa **OpenAPI 3.0.2** e descreve oito operações GET públicas. A página interativa carrega essa mesma definição, mostra os parâmetros e exemplos e executa consultas na origem em que foi aberta. Não depende de bibliotecas ou scripts externos para funcionar.
+A documentação fica disponível após o deploy da versão que inclui essas rotas. A definição usa **OpenAPI 3.0.2** e descreve nove operações GET públicas. A página interativa carrega essa mesma definição, mostra os parâmetros e exemplos e executa consultas na origem em que foi aberta. Não depende de bibliotecas ou scripts externos para funcionar.
 
 ## Cobertura atual
 
@@ -18,6 +18,7 @@ URL base: `https://rede-girassol-api-v-1.rafael10mayer.workers.dev`
 
 | Consulta | Parâmetros |
 |---|---|
+| `GET /v1/support-guide` | Sem parâmetros; resumos documentais revisados do módulo Encontre apoio |
 | `GET /health` | Disponibilidade do Worker; não consulta o D1 |
 | `GET /sources` | Fontes documentadas e limites da integração |
 | `GET /v1/places` | `q`, `city`, `state`, `limit`, `offset` |
@@ -82,3 +83,7 @@ Os testes validam a estrutura OpenAPI, os exemplos e as respostas reais da imple
 Veja o [guia de fontes e importação](REHABILITATION.md). A busca dedicada a autismo usa curadoria institucional explícita, com público, publicação, revisão e prazo. `documented` significa que existe essa evidência, sem confirmação de vagas atuais. Ao vencer o prazo de revisão, o estabelecimento sai dessa busca até nova revisão. A lista não é exaustiva.
 
 Reabilitação conserva observações mensais do serviço CNES 135. Sem `reference_month`, retorna a última competência importada por instituição, classificação e tipo; não equivale a um retrato completo do município. `autism_evidence` é `null` e `autism_care_verification` é `not_verified` quando não há curadoria válida. Classificação 002 não gera confirmação de TEA. Filtros repetidos ou classificação/mês/CNES inválidos retornam 400. Catálogo indisponível retorna 503 sem impedir as outras consultas.
+
+## Encontre apoio
+
+O [piloto de busca documental](SUPPORT_GUIDE.md) fornece resumos editoriais revisados em `GET /v1/support-guide`. Não recebe perguntas nem parâmetros; a interface pesquisa as palavras no navegador. Não usa geração por IA, não confirma vagas e retira resumos vencidos. A resposta inclui `mode`, `experimental`, `notice` e `documents` com fonte, datas, escopo e passos. Qualquer query string recebe 400. A rota funciona sem o banco.

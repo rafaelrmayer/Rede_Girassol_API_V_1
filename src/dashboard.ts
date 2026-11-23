@@ -166,6 +166,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         <nav class="nav" aria-label="Seções do painel">
           <button type="button" data-view="overview" aria-current="page"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</button>
           <button type="button" data-view="places"><span class="nav-icon" aria-hidden="true">✚</span>Estabelecimentos</button>
+          <button type="button" data-view="guide"><span class="nav-icon" aria-hidden="true">?</span>Encontre apoio</button>
           <button type="button" data-view="autism"><span class="nav-icon" aria-hidden="true">☀</span>Autismo e apoio</button>
           <button type="button" data-view="rehabilitation"><span class="nav-icon" aria-hidden="true">◎</span>Reabilitação</button>
           <button type="button" data-view="operators"><span class="nav-icon" aria-hidden="true">▦</span>Operadoras</button>
@@ -211,6 +212,25 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
           <button class="search-btn" type="submit">Pesquisar</button>
         </form>
         <div class="panel table-panel"><div class="table-meta"><span id="placesMeta">Aguardando consulta</span><span>Fonte: base atual da API</span></div><div id="placesResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use os filtros para consultar os registros disponíveis.</div></div><nav class="pager" aria-label="Paginação de estabelecimentos"><button class="refresh" type="button" id="placesPrevious" disabled>Anterior</button><span id="placesPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="placesNext" disabled>Próxima</button></nav></div>
+      </section>
+
+      <section class="view" id="guideView" aria-labelledby="viewTitle">
+        <p class="intro">Encontre orientações curtas sobre acesso a serviços para pessoas autistas. Escolha uma pergunta ou pesquise por palavras.</p>
+        <p class="panel-copy">A busca acontece neste navegador. Não informe nomes, diagnósticos individuais ou outros dados pessoais. As orientações vêm de fontes oficiais revisadas; confirme o acesso e a disponibilidade com a rede responsável.</p>
+        <div class="toolbar" aria-label="Perguntas prontas">
+          <button type="button" class="refresh" data-guide-topic="access">Por onde começar?</button>
+          <button type="button" class="refresh" data-guide-topic="children">Apoio para crianças</button>
+          <button type="button" class="refresh" data-guide-topic="adults">E para adultos?</button>
+          <button type="button" class="refresh" data-guide-topic="caregivers">Apoio aos cuidadores</button>
+        </div>
+        <form id="guideForm" class="toolbar">
+          <label class="search-wrap"><span class="sr-only">Pesquisar orientações</span><input id="guideQuery" type="search" maxlength="300" placeholder="Ex.: como conseguir encaminhamento?" autocomplete="off"></label>
+          <button type="submit" class="search-btn">Buscar orientação</button>
+          <button type="button" id="guideClear" class="refresh">Limpar</button>
+        </form>
+        <p class="panel-copy">Piloto com busca por palavras em resumos revisados, sem geração de respostas por IA. Ainda não cobre todas as neurodivergências ou cidades.</p>
+        <div id="guideResults" aria-live="polite" aria-busy="false"><p>Escolha uma pergunta para começar.</p></div>
+        <button type="button" class="refresh" id="guideServices">Consultar instituições em Autismo e apoio</button>
       </section>
 
       <section class="view" id="autismView" aria-labelledby="viewTitle">
@@ -278,13 +298,14 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     const titles = {
       overview: "Visão geral",
       places: "Estabelecimentos",
+      guide: "Encontre apoio · Experimental",
       autism: "Autismo e apoio",
       rehabilitation: "Serviços de reabilitação",
       operators: "Operadoras",
       plans: "Planos",
       sources: "Fontes e transparência"
     };
-    const views = ["overview", "places", "autism", "rehabilitation", "operators", "plans", "sources"];
+    const views = ["guide", "overview", "places", "autism", "rehabilitation", "operators", "plans", "sources"];
     const state = { sources: [], summary: {} };
     const byId = function (id) { return document.getElementById(id); };
 
@@ -570,6 +591,50 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       renderSources("overviewSources");
       renderSources("allSources");
     }
+    let guideData = null;
+    let guideVersion = 0;
+    function guideText(tag, text) {const node = document.createElement(tag); node.textContent = text; return node;}
+    function normalizedGuide(text) {return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();}
+    async function findGuide(topic) {
+      const version = ++guideVersion;
+      const target = byId("guideResults");
+      target.setAttribute("aria-busy", "true");
+      target.replaceChildren(guideText("p", "Consultando orientações revisadas…"));
+      try {
+        if (!guideData) guideData = await api("/v1/support-guide");
+        if (version !== guideVersion) return;
+        const today = new Date().toISOString().slice(0,10);
+        const documents = guideData.documents.filter(function (doc) {return doc.reviewed_on <= today && doc.review_due_on >= today;});
+        const words = normalizedGuide(byId("guideQuery").value).match(/[a-z0-9]+/g) || [];
+        const adultTerms = documents.find(function (doc) {return doc.id === "adults";});
+        const adultQuery = adultTerms && words.some(function (word) {return adultTerms.keywords.map(normalizedGuide).includes(word);});
+        const searchable = adultQuery ? documents.filter(function (doc) {return doc.id === "adults" || doc.id === "access";}) : documents;
+        const results = topic ? documents.filter(function (doc) {return doc.id === topic;}) : searchable.map(function (doc) {
+          const terms = doc.keywords.map(normalizedGuide);
+          return {doc: doc, score: new Set(words.filter(function (word) {return terms.includes(word);})).size};
+        }).filter(function (item) {return item.score > 0;}).sort(function (a,b) {return b.score-a.score;}).slice(0,3).map(function (item) {return item.doc;});
+        target.replaceChildren();
+        if (!results.length) target.append(guideText("p", "Não encontrei orientação revisada para essa busca. Tente uma pergunta pronta. A falta de resultado não significa ausência de atendimento."));
+        results.forEach(function (doc) {
+          const card = document.createElement("article"); card.className = "panel"; card.style.padding = "20px"; card.style.marginBottom = "16px";
+          card.append(guideText("h2",doc.title),guideText("p",doc.summary));
+          const details = document.createElement("details"); details.append(guideText("summary","Ver os passos e o alcance da orientação"));
+          details.append(guideText("p",doc.scope));
+          const list = document.createElement("ol"); doc.steps.forEach(function (step) {list.append(guideText("li",step));}); details.append(list); card.append(details);
+          const link = guideText("a",doc.source_title + " ↗");
+          const source = new URL(doc.source_url);
+          if (source.protocol === "https:" && source.hostname.endsWith(".gov.br")) {link.href=source.href; link.target="_blank"; link.rel="noopener noreferrer";card.append(link);}
+          card.append(guideText("p", "Publicação: " + (doc.source_published_on || "data não registrada") + " · Revisão: " + doc.reviewed_on + " · Rever até: " + doc.review_due_on));
+          target.append(card);
+        });
+      } catch (_) {
+        if (version === guideVersion) target.replaceChildren(errorBox("Não foi possível carregar as orientações. Tente novamente."));
+      } finally {if (version === guideVersion) target.setAttribute("aria-busy", "false");}
+    }
+    document.querySelectorAll("[data-guide-topic]").forEach(function (button) {button.addEventListener("click",function () {byId("guideQuery").value="";findGuide(button.getAttribute("data-guide-topic"));});});
+    byId("guideForm").addEventListener("submit",function (event) {event.preventDefault();findGuide(null);});
+    byId("guideClear").addEventListener("click",function () {guideVersion++;byId("guideQuery").value="";byId("guideResults").setAttribute("aria-busy","false");byId("guideResults").replaceChildren(guideText("p","Escolha uma pergunta para começar."));byId("guideQuery").focus();});
+    byId("guideServices").addEventListener("click",function () {navigate("autism");});
     function navigate(view) {
       if (!views.includes(view)) return;
       views.forEach(function (name) {
