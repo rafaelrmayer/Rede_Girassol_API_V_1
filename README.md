@@ -220,3 +220,60 @@ Contrato de `POST /admin/import` (Bearer administrativo obrigatório):
 Confira `GET /v1/places?city=Curitiba&state=PR`, `GET /v1/places/0000001` e `GET /admin/imports`. Nenhuma associação a planos é criada pela importação. A existência no CNES continua sem comprovar rede credenciada.
 
 Os testes usam a migração real e SQLite em memória para validar persistência, consultas, atualização, validação, autorização e rollback. A checagem TypeScript ignora declarações de bibliotecas externas (`skipLibCheck`) porque Vitest/Node e Workers declaram globais sobrepostos; o código do projeto permanece com verificação estrita.
+
+## Primeira amostra real do CNES
+
+O preparador `scripts/prepare_cnes_sample.py` consulta uma única página de até 20 estabelecimentos na [API oficial do Ministério da Saúde](https://apidadosabertos.saude.gov.br/v1). O formato mapeado é **`GET /cnes/estabelecimentos`**, com envelope `estabelecimentos`; não se trata de um conversor genérico para todos os arquivos ZIP ou para a rota distinta `/assistencia-a-saude/cnes-estabelecimentos`.
+
+Foi conferida uma amostra de três estabelecimentos de Curitiba em 23/11/2026. Os campos da API não incluem o nome do município: a conversão cruza `codigo_municipio` de seis dígitos com os primeiros seis dígitos do ID municipal de sete dígitos da [API de localidades do IBGE](https://servicodados.ibge.gov.br/api/docs/localidades). A UF também precisa corresponder. Falta de correspondência interrompe a preparação.
+
+| Campo oficial CNES | Campo interno / regra |
+|---|---|
+| `codigo_cnes` | `cnes_code`: texto de sete dígitos, recuperando zeros iniciais |
+| `nome_fantasia` | `name`; na ausência, usa `nome_razao_social` |
+| `codigo_uf` | `state`: sigla correspondente ao código IBGE |
+| `codigo_municipio` | `city`: nome verificado na lista de municípios do IBGE |
+| `endereco_estabelecimento`, `numero_estabelecimento`, `bairro_estabelecimento` | `address`: partes presentes separadas por vírgula |
+| `data_atualizacao` | `source_updated_at`: data real do cadastro; ausência vira `null` |
+
+Demais campos da resposta, incluindo e-mail, telefone, CNPJ e coordenadas, não são copiados. O campo `source` recebe `cnes`. A data de download não substitui a data de atualização do cadastro.
+
+### 1. Preparar e conferir (sem token ou conta Cloudflare)
+
+```bash
+python3 scripts/prepare_cnes_sample.py \
+  --state-code 41 --municipality 410690 --limit 3 \
+  --output data/cnes-curitiba.json
+```
+
+O comando usa filtros de UF, município e `status=1` (ativo) na API oficial. Confere o município e o limite devolvidos, gera o JSON normalizado e `data/cnes-curitiba.json.metadata.json` com URLs consultadas, horário UTC e hashes dos JSONs canônicos recebido e gerado. Não faz importação, não configura Cloudflare e não altera banco algum. Arquivos existentes não são sobrescritos. A pasta `data/` é ignorada pelo Git.
+
+Abra o arquivo e confira os três nomes, códigos CNES, endereço institucional e datas. Os metadados registram o filtro solicitado de situação ativa; o esquema interno atual não armazena a situação cadastral. Portanto, não há acompanhamento automático de desativação ou atualização posterior. A data do portal e a data de cada cadastro também podem diferir.
+
+Para reproduzir a conversão sem rede, forneça uma resposta CNES salva e uma lista IBGE salva:
+
+```bash
+python3 scripts/prepare_cnes_sample.py \
+  --input resposta-cnes.json --municipalities municipios-ibge.json \
+  --output data/cnes-offline.json
+```
+
+O modo offline registra a origem como arquivos locais, sem afirmar que foram baixados ou autenticados pelo script. Hashes servem para comparar conteúdo, não para atestar autenticidade.
+
+### 2. Importar somente no ambiente local
+
+Com o D1 local migrado, o Worker rodando e `IMPORT_TOKEN` configurado conforme a seção anterior:
+
+```bash
+python3 scripts/import_records.py --file data/cnes-curitiba.json --source cnes
+```
+
+Confira `http://127.0.0.1:8787/v1/places?city=Curitiba&state=PR` e o painel na raiz. Reenviar o arquivo atualiza os mesmos CNES, sem duplicação. A publicação remota fica para uma etapa posterior, após conferir amostra, ambiente e condições de reutilização da fonte. Cadastro no CNES não comprova atendimento por um plano específico nem disponibilidade atual de serviços.
+
+### Testar o mapeamento
+
+```bash
+npm run test:cnes
+```
+
+Os testes Python usam dados fictícios com os nomes de campos observados na API, sem depender de acesso à internet. Verificam zeros iniciais, UF/município, campos ausentes, datas, duplicação e preparação offline com metadados. As verificações do GitHub executam esses testes junto dos testes TypeScript.
