@@ -1,3 +1,4 @@
+import { withContacts } from './contacts';
 import { supportGuide } from './support-guide';
 import { listAutismSupport } from './autism-support';
 import { listRehabilitation } from './rehabilitation';
@@ -122,14 +123,15 @@ export default {
       if (city) { stmt += " AND city LIKE ?"; params.push(`%${city}%`); }
       if (state) { stmt += " AND state = ?"; params.push(state); }
       const count = "SELECT COUNT(*) AS total" + stmt.slice(stmt.indexOf(" FROM"));
-      return json(await readPage(env.DB, stmt, count, " ORDER BY name, id", params, page,
-        "A consulta reflete somente os dados presentes na base."));
+      const result = await readPage(env.DB, stmt, count, " ORDER BY name, id", params, page,
+        "A consulta reflete somente os dados presentes na base.");
+      return json({...result, results: result.results.map(withContacts)});
     }
 
     const placeMatch = path.match(/^\/v1\/places\/([^/]+)$/);
     if (request.method === "GET" && placeMatch) {
       const result = await env.DB.prepare("SELECT * FROM establishments WHERE id = ? OR cnes_code = ? LIMIT 1").bind(placeMatch[1], placeMatch[1]).first();
-      return result ? json({ result }) : json({ error: "not_found" }, 404);
+      return result ? json({ result: withContacts(result) }) : json({ error: "not_found" }, 404);
     }
 
     if (request.method === "GET" && path === "/v1/operators") {

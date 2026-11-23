@@ -87,3 +87,7 @@ Reabilitação conserva observações mensais do serviço CNES 135. Sem `referen
 ## Encontre apoio
 
 O [piloto de busca documental](SUPPORT_GUIDE.md) fornece resumos editoriais revisados em `GET /v1/support-guide`. Não recebe perguntas nem parâmetros; a interface pesquisa as palavras no navegador. Não usa geração por IA, não confirma vagas e retira resumos vencidos. A resposta inclui `mode`, `experimental`, `notice` e `documents` com fonte, datas, escopo e passos. Qualquer query string recebe 400. A rota funciona sem o banco.
+
+## Contatos institucionais
+
+As listas `/v1/places`, `/v1/autism-support`, `/v1/rehabilitation` e o detalhe de estabelecimento incluem `contact`, com telefones, e-mail/site quando conhecidos, origem, datas e limitações. `published` representa contato publicado conferido documentalmente; não confirma linha ativa ou agendamento. Sem fonte vigente, retorna `not_verified` e canais vazios. Veja o [guia de contatos](CONTACTS.md).

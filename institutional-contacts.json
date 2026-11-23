@@ -1,0 +1,297 @@
+{
+  "entries": [
+    {
+      "cnes_code": "3321983",
+      "phones": [
+        {
+          "number": "+554133353938",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3321983",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3282910",
+      "phones": [
+        {
+          "number": "+554133229339",
+          "label": "Central administrativa APAE Curitiba — não é linha direta da unidade"
+        }
+      ],
+      "email": null,
+      "website": "https://apaecuritiba.org.br/",
+      "source_url": "https://apaecuritiba.org.br/novidades/perguntas-frequentes/",
+      "source_kind": "institution",
+      "source_updated_on": null,
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Central geral publicada pela APAE Curitiba. Informe a unidade procurada e confirme o canal de atendimento terapêutico; não é garantia de agendamento."
+    },
+    {
+      "cnes_code": "9907939",
+      "phones": [
+        {
+          "number": "+554133141900",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/9907939",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "0015466",
+      "phones": [
+        {
+          "number": "+554132234114",
+          "label": "Ambulatório Encantar"
+        },
+        {
+          "number": "+554132337199",
+          "label": "Ambulatório Encantar — alternativa"
+        }
+      ],
+      "email": null,
+      "website": "https://locais.curitiba.pr.gov.br/ambulatorio-encantar/2052",
+      "source_url": "https://locais.curitiba.pr.gov.br/ambulatorio-encantar/2052",
+      "source_kind": "municipality",
+      "source_updated_on": null,
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Números publicados pelo portal municipal. Confirme critérios e encaminhamento; a conferência da página não confirma vagas ou linha ativa."
+    },
+    {
+      "cnes_code": "3895343",
+      "phones": [
+        {
+          "number": "+554133141900",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3895343",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3294501",
+      "phones": [
+        {
+          "number": "+554133735055",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3294501",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3316408",
+      "phones": [
+        {
+          "number": "+554133621186",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3316408",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3282961",
+      "phones": [
+        {
+          "number": "+554133229339",
+          "label": "Central administrativa APAE Curitiba — não é linha direta da unidade"
+        }
+      ],
+      "email": null,
+      "website": "https://apaecuritiba.org.br/",
+      "source_url": "https://apaecuritiba.org.br/novidades/perguntas-frequentes/",
+      "source_kind": "institution",
+      "source_updated_on": null,
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Central geral publicada pela APAE Curitiba. Informe a unidade procurada e confirme o canal de atendimento terapêutico; não é garantia de agendamento."
+    },
+    {
+      "cnes_code": "5167604",
+      "phones": [
+        {
+          "number": "+554130238579",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/5167604",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3321959",
+      "phones": [
+        {
+          "number": "+554132227150",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3321959",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3308715",
+      "phones": [
+        {
+          "number": "+554132627473",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3308715",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3984583",
+      "phones": [
+        {
+          "number": "+554130132543",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3984583",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "2774925",
+      "phones": [
+        {
+          "number": "+554131111800",
+          "label": "FEPE — contato geral"
+        }
+      ],
+      "email": "contato@fepe.org.br",
+      "website": "https://www.fepe.org.br/contato/",
+      "source_url": "https://www.fepe.org.br/contato/",
+      "source_kind": "institution",
+      "source_updated_on": null,
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Telefone geral e e-mail da secretaria administrativa publicados pela FEPE de Curitiba. Confirme o setor responsável pelo atendimento; não é contato do laboratório ou confirmação de vagas."
+    },
+    {
+      "cnes_code": "5750075",
+      "phones": [
+        {
+          "number": "+5541999009410",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/5750075",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-11-27",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3295621",
+      "phones": [
+        {
+          "number": "+554133665212",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/3295621",
+      "source_kind": "cnes",
+      "source_updated_on": "2026-05-05",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "2384299",
+      "phones": [
+        {
+          "number": "+554133601800",
+          "label": "Telefone institucional cadastrado no CNES"
+        }
+      ],
+      "email": null,
+      "website": null,
+      "source_url": "https://apidadosabertos.saude.gov.br/cnes/estabelecimentos/2384299",
+      "source_kind": "cnes",
+      "source_updated_on": "2025-09-03",
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Número publicado no cadastro CNES. A conferência documental não confirma que a linha está ativa ou agenda atendimentos. Confirme com a instituição."
+    },
+    {
+      "cnes_code": "3282929",
+      "phones": [
+        {
+          "number": "+554133229339",
+          "label": "Central administrativa APAE Curitiba — não é linha direta da unidade"
+        }
+      ],
+      "email": null,
+      "website": "https://apaecuritiba.org.br/",
+      "source_url": "https://apaecuritiba.org.br/novidades/perguntas-frequentes/",
+      "source_kind": "institution",
+      "source_updated_on": null,
+      "reviewed_on": "2026-11-23",
+      "review_due_on": "2027-02-21",
+      "note": "Central geral publicada pela APAE Curitiba. Informe a unidade procurada e confirme o canal de atendimento terapêutico; não é garantia de agendamento."
+    }
+  ]
+}

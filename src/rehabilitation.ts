@@ -1,3 +1,4 @@
+import { institutionalContact } from './contacts';
 import { autismEvidence } from './autism-support';
 import catalog from '../rehabilitation-classifications.json';
 import { pagination, readPage } from './pagination';
@@ -99,7 +100,7 @@ export async function listRehabilitation(params: URLSearchParams, db: D1Database
       r.classification_description,r.service_type,r.reference_month,r.source,r.source_url,r.imported_at` + from,
       'SELECT COUNT(*) AS total' + from, ' ORDER BY r.source_establishment_name,e.cnes_code,r.classification_code,r.service_type,r.reference_month,r.id', values, page, catalog.note);
     return {status: 200, body: {...result, classifications: catalog.classifications, classification_reference_url: catalog.reference_url,
-      results: result.results.map(row => ({...row,
+      results: result.results.map(row => ({...row, contact: institutionalContact(row.cnes_code),
         classification_name: names.get(String(row.classification_code)) ?? String(row.classification_description),
         autism_care_verification: autismEvidence(String(row.cnes_code)) ? 'documented' : 'not_verified',
         autism_evidence: autismEvidence(String(row.cnes_code))}))}};

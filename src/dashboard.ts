@@ -417,6 +417,31 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       cell.textContent = safeValue(value);
       return cell;
     }
+    function renderContact(contact) {
+      const box = document.createElement("div");
+      if (!contact || contact.status !== "published") {box.textContent="Contato não confirmado";return box;}
+      let destination = box;
+      function line(text, href) {
+        const paragraph = document.createElement("p");
+        const node = document.createElement(href ? "a" : "span");node.textContent=text;
+        if (href) {node.href=href;if (href.startsWith("https:")) {node.target="_blank";node.rel="noopener noreferrer";}}
+        paragraph.append(node);destination.append(paragraph);
+      }
+      (contact.phones || []).forEach(function (phone) {
+        if (/^\+55[0-9]{10,11}$/.test(phone.number)) line("Ligar: " + phone.number + " · " + phone.label, "tel:"+phone.number);
+      });
+      if (contact.email && /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(contact.email)) line(contact.email,"mailto:"+contact.email);
+      const details = document.createElement("details");
+      const summary = document.createElement("summary");summary.textContent="Fonte e conferência do contato";details.append(summary);box.append(details);destination=details;
+      [ ["Página institucional",contact.website], ["Fonte do contato",contact.source_url] ].forEach(function (item) {
+        try {const url=new URL(item[1]);if(url.protocol==="https:") line(item[0],url.href);} catch (_) {}
+      });
+      line(contact.source_kind === "cnes" ? "Telefone do cadastro CNES — confirme" : "Contato publicado em página institucional");
+      if (contact.source_updated_on) line("Atualização na fonte: " + contact.source_updated_on);
+      line("Página conferida: " + contact.reviewed_on);
+      line(contact.note);
+      return box;
+    }
     function renderTable(targetId, rows, columns, emptyTitle, emptyMessage) {
       const target = byId(targetId);
       target.replaceChildren();
@@ -442,6 +467,9 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         columns.forEach(function (column) {
           const value = typeof column.value === "function" ? column.value(row) : row[column.value];
           const cell = makeCell(value, Boolean(column.primary));
+          if (column.contact) {
+            cell.replaceChildren(renderContact(row.contact));
+          }
           if (column.link) {
             try {
               const url = new URL(column.link(row));
@@ -471,12 +499,14 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       places: { endpoint: "/v1/places", emptyTitle: "Nenhum registro disponível", columns: [
         { label: "Estabelecimento", value: "name", primary: true },
         { label: "CNES", value: "cnes_code" },
+        { label: "Contato institucional", value: function () {return "";}, contact: true },
         { label: "Cidade / UF", value: function (r) { return [r.city, r.state].filter(Boolean).join(" / "); } },
         { label: "Endereço", value: "address" }, { label: "Fonte", value: "source" },
         { label: "Atualização da fonte", value: "source_updated_at" }
       ] },
       autism: { endpoint: "/v1/autism-support", emptyTitle: "Nenhum atendimento documentado disponível com esses filtros", columns: [
         { label: "Estabelecimento", value: "name", primary: true }, { label: "CNES", value: "cnes_code" },
+        { label: "Contato institucional", value: function () {return "";}, contact: true },
         { label: "Cidade / UF", value: function (r) { return [r.city,r.state].filter(Boolean).join(" / "); } },
         { label: "Público e acesso informado", value: function (r) { return r.autism_evidence.scope + " " + r.autism_evidence.access_note; } },
         { label: "Fonte do atendimento", value: function () { return "Consultar publicação oficial ↗"; }, link: function (r) { return r.autism_evidence.url; } },
@@ -485,6 +515,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       ] },
       rehabilitation: { endpoint: "/v1/rehabilitation", emptyTitle: "Nenhum cadastro de reabilitação disponível", columns: [
         { label: "Estabelecimento na referência", value: "name", primary: true }, { label: "CNES", value: "cnes_code" },
+        { label: "Contato institucional", value: function () {return "";}, contact: true },
         { label: "Cidade / UF", value: function (r) { return [r.city, r.state].filter(Boolean).join(" / "); } },
         { label: "Modalidade cadastrada", value: "classification_name" },
         { label: "Referência CNES", value: function (r) { return r.reference_month ? r.reference_month.slice(4) + "/" + r.reference_month.slice(0,4) : "—"; } },

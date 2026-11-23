@@ -15,6 +15,10 @@ O objetivo é facilitar a descoberta de informações úteis por meio de uma API
 
 Acesse a [documentação interativa](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/docs), baixe o [OpenAPI JSON](https://rede-girassol-api-v-1.rafael10mayer.workers.dev/openapi.json) ou consulte o [guia da API](docs/API.md). O arquivo [openapi.json](openapi.json) descreve as consultas públicas para integração e futura importação no RapidAPI.
 
+## Contatos institucionais
+
+O painel e a API exibem telefones publicados, com botão para ligar, além de e-mail/site quando conferidos. Indicam central administrativa, procedência e data de revisão. Contato cadastrado no CNES é identificado separadamente; linha ativa e vagas precisam ser confirmadas. Veja o [guia dos contatos](docs/CONTACTS.md).
+
 ## Encontre apoio · Experimental
 
 Perguntas prontas e busca local por palavras em orientações revisadas sobre acesso ao SUS, crianças/adolescentes, adultos e cuidadores. Mostra fontes e passos curtos, sem enviar o texto pesquisado ao servidor. É um piloto de recuperação documental, sem geração por IA. Veja o [guia do módulo](docs/SUPPORT_GUIDE.md).
