@@ -12,6 +12,7 @@ import { DASHBOARD_HTML } from "./dashboard";
 export interface Env {
   DB: D1Database;
   IMPORT_TOKEN?: string;
+  RAPIDAPI_PROXY_SECRET?: string;
   APP_ENV?: string;
 }
 
@@ -36,7 +37,18 @@ function authorized(request: Request, env: Env): boolean {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    const path = url.pathname;
+    let path = url.pathname;
+    if (path === "/rapidapi" || path.startsWith("/rapidapi/")) {
+      const target = path.slice("/rapidapi".length);
+      const allowed = ["/health", "/sources", "/v1/places", "/v1/autism-support", "/v1/rehabilitation", "/v1/support-guide"].includes(target)
+        || /^\/v1\/places\/[^/]+$/.test(target);
+      if (!allowed) return json({error: "not_found"}, 404);
+      if (request.method !== "GET") return json({error: "method_not_allowed"}, 405);
+      if (!env.RAPIDAPI_PROXY_SECRET?.trim()) return json({error: "gateway_not_configured"}, 503);
+      if (request.headers.get("x-rapidapi-proxy-secret") !== env.RAPIDAPI_PROXY_SECRET)
+        return json({error: "gateway_unauthorized"}, 403);
+      path = target;
+    }
 
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: {

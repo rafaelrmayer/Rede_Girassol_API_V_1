@@ -12,6 +12,12 @@ EXCLUDED = {'/v1/operators', '/v1/plans'}
 def prepare(document):
     result = copy.deepcopy(document)
     result['paths'] = {path: item for path, item in result['paths'].items() if path not in EXCLUDED}
+    result['servers'] = [{**server, 'url': server['url'].rstrip('/') + '/rapidapi'} for server in result.get('servers', [])]
+    for item in result['paths'].values():
+        for code, description in [('403','Credencial do gateway ausente/inválida ou bloqueio de borda.'), ('405','Método não permitido no acesso RapidAPI.'), ('503','Gateway ainda não configurado ou catálogo indisponível.')]:
+            item['get']['responses'][code] = {'description':description, 'content':{
+                'application/json':{'schema':{'type':'object','required':['error'],'properties':{'error':{'type':'string'},'message':{'type':'string'}}}},
+                **({'text/html':{'schema':{'type':'string'}}} if code == '403' else {})}}
     result['info']['title'] = 'Rede Girassol API — piloto de consultas'
     result['info']['description'] = ('Catálogo parcial de estabelecimentos e observações históricas de reabilitação, '
         'atendimento a TEA documentado, contatos publicados e orientações experimentais de acesso. '

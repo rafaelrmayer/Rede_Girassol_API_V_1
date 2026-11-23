@@ -34,13 +34,30 @@ Não anunciar cobertura nacional, busca semântica, diagnóstico, vagas ou rede 
 
 Os nomes das opções podem variar na interface. Nenhuma conta RapidAPI foi acessada e nenhuma listagem foi criada ou publicada por esta alteração.
 
-## Acesso e limites: pendência técnica explícita
+## Acesso separado com Proxy Secret
 
-A origem atual é pública e continua atendendo o painel e a documentação. As cotas configuradas no RapidAPI controlam chamadas que passam pelo gateway; **não bloqueiam acesso direto à origem**. Este pacote não implementa autenticação de consumidores ou rate limiting no Worker.
+O Worker oferece as sete consultas do piloto também sob `/rapidapi`, exigindo o cabeçalho que o próprio gateway adiciona. As rotas públicas antigas e o painel continuam acessíveis. O namespace não expõe importação, administração, documentação ou rotas ANS.
 
-A [documentação oficial do gateway RapidAPI](https://docs.rapidapi.com/docs/hub-listing-gateway-tab) descreve o cabeçalho `X-RapidAPI-Proxy-Secret`, que permite ao backend conferir chamadas encaminhadas pelo gateway. Quando o rascunho existir, preparar e testar um acesso de integração protegido com esse segredo, preservando o painel público. O segredo fica somente na configuração do backend; não deve ser compartilhado no chat, commitado ou confundido com a chave do consumidor `X-RapidAPI-Key`.
+Após merge/deploy:
 
-Antes de oferecer cotas exclusivas ou cobrar por acesso, é necessário concluir essa decisão de arquitetura e validar os limites reais. Não apresentar o pacote como integração de cobrança pronta. O próximo passo concreto é criar o rascunho e conferir as configurações que a conta disponibiliza.
+1. Em RapidAPI → Hub Listing → Gateway → Firewall Settings, copiar **X-RapidAPI-Proxy-Secret**, mantendo o valor oculto.
+2. Em Cloudflare → Worker rede-girassol-api-v-1 → Configurações → Variáveis e segredos, adicionar tipo **Secret**, nome `RAPIDAPI_PROXY_SECRET`, valor copiado. Salvar/implantar. Não usar `IMPORT_TOKEN` nem a chave do consumidor.
+3. Em RapidAPI → Hub Listing → General → Base URL, substituir pela origem com prefixo:
+
+   `https://rede-girassol-api-v-1.rafael10mayer.workers.dev/rapidapi`
+
+4. Manter os caminhos dos endpoints como `/health`, `/sources`, `/v1/...`; não duplicar o prefixo. A definição atualizada já aponta para essa Base URL para novas importações; no projeto existente basta mudar a Base URL, sem recriar endpoints.
+5. Repetir `/health` e uma consulta paginada pelo RapidAPI: devem retornar 200. Abrir `/rapidapi/health` diretamente sem cabeçalho deve retornar 403; sem segredo configurado, 503. Caminhos/métodos não permitidos retornam 404/405. A raiz pública e o painel continuam funcionais.
+
+O valor secreto não deve ir ao chat, repositório, exemplos ou screenshots. O cabeçalho é acrescentado pelo gateway; o consumidor usa suas próprias credenciais RapidAPI. [Referência oficial](https://docs.rapidapi.com/docs/hub-listing-gateway-tab).
+
+**Limitação:** isso autentica o namespace de integração, mas não elimina as consultas diretas à API pública que sustenta o painel. Cotas do RapidAPI não são cotas globais da infraestrutura. O Worker não ganhou rate limiting por consumidor; não anunciar acesso exclusivo ou bloqueio de bypass para dados também públicos.
+
+## Definir limites na conta
+
+Em **Monetize**, conferir o plano e as opções que a conta oferece. Proposta inicial para avaliação: acesso gratuito, sem excedentes pagos, teto de 1.000 chamadas/mês e 10 chamadas/minuto, se a interface permitir. São valores sugeridos, ainda não configurados ou escolhidos pelo responsável. Confirmar unidade, teto efetivo e tratamento de excedentes antes de salvar.
+
+A [documentação de rate limiting](https://docs.rapidapi.com/v2.0/docs/rate-limiting) descreve configuração por plano e observa que o proprietário pode ter uma assinatura de teste ilimitada. Os testes feitos com a conta proprietária validam respostas, não demonstram bloqueio das cotas de consumidor. Não escolher plano cobrado ou cobrança por excedente sem decisão explícita do responsável.
 
 ## Fontes e reutilização: conferência antes da publicação
 
@@ -49,7 +66,7 @@ Antes de oferecer cotas exclusivas ou cobrar por acesso, é necessário concluir
 - [Orientação de dados abertos do Ministério da Saúde](https://www.gov.br/saude/pt-br/acesso-a-informacao/dados-abertos/dados-abertos).
 - Curadoria municipal, resumos e contatos: fontes individuais nos guias [reabilitação](REHABILITATION.md), [orientações](SUPPORT_GUIDE.md) e [contatos](CONTACTS.md).
 
-A revisão inicial encontrou avisos de licença no portal e orientação geral sobre dados abertos; isso não foi tratado como comprovação de licença específica para cada recurso ou como autorização para qualquer uso comercial. Conferir e registrar a licença/condições de cada conjunto efetivamente distribuído, manter atribuição e links e não redistribuir imagens, marcas ou artigos integrais das instituições. A documentação atual registra essa pendência, sem declarar que a conferência de reutilização está concluída.
+A revisão inicial encontrou avisos de licença no portal e orientação geral sobre dados abertos; isso não foi tratado como comprovação de licença específica para cada recurso ou como autorização para qualquer uso comercial. Conferir e registrar a licença/condições de cada conjunto efetivamente distribuído, manter atribuição e links e não redistribuir imagens, marcas ou artigos integrais das instituições. A revisão em [SOURCE_REUSE_REVIEW.md](SOURCE_REUSE_REVIEW.md) registra o aviso CC BY-ND 3.0, o texto federal aplicável, o alcance limitado desses achados e uma mensagem pronta para esclarecer a dúvida documental. Não declara autorização específica que não foi obtida.
 
 ## Sequência para a ANS
 
