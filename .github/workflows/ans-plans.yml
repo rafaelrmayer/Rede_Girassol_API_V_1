@@ -1,0 +1,88 @@
+name: Preparar ou importar planos ANS
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Enviar partes e publicar somente o catálogo completo (desmarcado: só preparar)'
+        required: true
+        default: false
+        type: boolean
+      prepared_run_id:
+        description: 'Para retomar: ID da execução que gerou o artifact ans-planos-preparados (vazio: novo arquivo oficial)'
+        required: false
+        type: string
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ans-plans-production
+  cancel-in-progress: false
+jobs:
+  plans:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Testar preparadores e publicadores
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Conferir API antes do download
+        if: inputs.publish
+        env:
+          IMPORT_TOKEN: ${{ secrets.REDE_GIRASSOL_IMPORT_TOKEN }}
+        run: python3 scripts/publish_ans_plans.py --check-only
+      - name: Preparar catálogo nacional oficial
+        if: inputs.prepared_run_id == ''
+        run: python3 scripts/prepare_ans_plans.py --output data/ans-planos.json
+      - name: Recuperar o mesmo pacote para retomar
+        if: inputs.prepared_run_id != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PREPARED_RUN_ID: ${{ inputs.prepared_run_id }}
+        run: |
+          [[ "$PREPARED_RUN_ID" =~ ^[0-9]+$ ]] || exit 1
+          gh run download "$PREPARED_RUN_ID" --name ans-planos-preparados --dir data
+      # Save the frozen source BEFORE sending any part, so an interruption is resumable.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ans-planos-preparados
+          path: data/ans-planos.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Enviar partes pendentes e publicar catálogo completo
+        if: inputs.publish
+        env:
+          IMPORT_TOKEN: ${{ secrets.REDE_GIRASSOL_IMPORT_TOKEN }}
+        run: python3 scripts/publish_ans_plans.py --file data/ans-planos.json --output data/ans-planos-comprovante.json
+      - uses: actions/upload-artifact@v4
+        if: inputs.publish && success()
+        with:
+          name: ans-planos-comprovante
+          path: data/ans-planos-comprovante.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Resumo e instruções de retomada
+        if: always()
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          package=Path('data/ans-planos.json')
+          if package.exists():
+              p=json.loads(package.read_text())
+              receipt=Path('data/ans-planos-comprovante.json')
+              with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+                  out.write(f'## Planos ANS — catálogo nacional\n\n{p["manifest"]["record_count"]} planos; data da fonte: {p["manifest"]["source_date"]}.\n\n')
+                  if receipt.exists():out.write(f'Resultado: **{json.loads(receipt.read_text())["status"]}**. Catálogo completo conferido.\n\n')
+                  else:out.write('**Publicação não confirmada nesta execução.** Se publish estava desmarcado, foi apenas preparação. Se houve interrupção, as partes não ficam públicas.\n\n')
+                  out.write(f'Para retomar o mesmo pacote, use prepared_run_id **{os.environ["RUN_ID"]}** e marque publish. O artifact precisa estar disponível (30 dias). Não gere uma fonte nova para retomar.\n\n')
+                  out.write('Plano cadastrado/ativo não garante comercialização, rede credenciada, vaga ou cobertura de procedimento. Confira limites de escrita/armazenamento do D1 antes da carga nacional. Não há cron de planos nesta entrega.\n')
+          PY

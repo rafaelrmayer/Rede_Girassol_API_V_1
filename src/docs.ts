@@ -20,7 +20,7 @@ header {display:flex;justify-content:space-between;align-items:center;flex-wrap:
 </head>
 <body><main>
 <header><div><p class="eyebrow">Rede Girassol · API experimental</p><h1>Documentação da API</h1><p id="version" class="muted">Carregando definição OpenAPI…</p></div><nav class="actions" aria-label="Links da documentação"><a href="/" class="button">Voltar ao painel</a><a href="/openapi.json" download="rede-girassol-openapi.json" class="button primary">Baixar OpenAPI JSON</a></nav></header>
-<p class="notice"><strong>Cobertura parcial.</strong> As consultas usam os registros já importados no banco. Não há garantia de cobertura nacional ou municipal completa. O CNES não comprova rede credenciada ou disponibilidade atual de serviços. A integração ANS permanece pendente.</p>
+<p class="notice"><strong>Cobertura parcial.</strong> As consultas usam os registros já importados no banco. Não há garantia de cobertura nacional ou municipal completa. O CNES não comprova rede credenciada ou disponibilidade atual de serviços. Operadoras e planos ANS dependem das respectivas cargas completas validadas; confira disponibilidade e datas em /sources. Não há rede credenciada integrada.</p>
 <p class="description">Abra uma consulta para ver parâmetros, exemplos de formato e testar uma requisição GET neste mesmo serviço. Os exemplos de estabelecimentos são fictícios; o resultado do teste vem da API consultada.</p>
 <div id="loadStatus" role="status" aria-live="polite"></div><section aria-label="Consultas públicas" id="endpoints"></section>
 <h2>Modelos de resposta</h2><p class="muted">Os nomes referenciados por $ref estão definidos abaixo e no arquivo OpenAPI.</p><div id="models"></div>

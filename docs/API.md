@@ -8,7 +8,7 @@ A documentação fica disponível após o deploy da versão que inclui essas rot
 
 ## Cobertura atual
 
-A base contém somente os cadastros que já foram importados manualmente. A quantidade e os municípios disponíveis dependem das cargas realizadas. `/sources` indica a integração CNES como parcial e a ANS como pendente; não é uma medição da cobertura por município.
+A base contém somente os cadastros que já foram importados manualmente. A quantidade e os municípios disponíveis dependem das cargas realizadas. `/sources` indica a integração CNES como parcial e a ANS conforme as cargas validadas; não é uma medição da cobertura por município.
 
 Cadastro no CNES não comprova vínculo com um plano de saúde, disponibilidade de serviços ou situação ativa atual. A data `source_updated_at` vem da fonte, quando informada. `imported_at`, disponível no detalhe, é o horário UTC de gravação no formato SQLite `AAAA-MM-DD HH:mm:ss`; não substitui a data de referência da fonte. Os exemplos de estabelecimentos no OpenAPI são fictícios e identificados como ilustrações de formato.
 
@@ -26,7 +26,7 @@ URL base: `https://rede-girassol-api-v-1.rafael10mayer.workers.dev`
 | `GET /v1/autism-support` | `q`, `city`, `state`, `limit`, `offset`; fontes explícitas revisadas de atendimento a TEA |
 | `GET /v1/rehabilitation` | `q`, `city`, `state`, `classification_code`, `reference_month` (AAAAMM), `cnes_code`, `service_type`, `limit`, `offset` |
 | `GET /v1/operators` | `q`, `city`, `state`, `status`, `ans_code`, `limit`, `offset`; sede e situação conforme arquivos ANS importados |
-| `GET /v1/plans` | `q`, `city`, `state`, `status`, `ans_code`, `limit`, `offset`; sede e situação conforme arquivos ANS importados |
+| `GET /v1/plans` | `q`, `ans_code`, `registration_code`, `plan_id`, `status`, `limit`, `offset`; características cadastrais após carga nacional validada |
 
 `q` e `city` fazem pesquisa parcial com a semântica LIKE do SQLite, na qual `%` e `_` são curingas. `state` remove espaços externos e converte o valor para maiúsculas antes da comparação. Os limites de paginação são descritos na definição; formatos inválidos de UF ou filtros sem correspondência retornam lista vazia.
 
@@ -94,4 +94,8 @@ As listas `/v1/places`, `/v1/autism-support`, `/v1/rehabilitation` e o detalhe d
 
 ## Operadoras ANS
 
-O [guia de carga ANS](ANS_OPERATORS.md) descreve os arquivos ativos/cancelados e a validação antes de publicar. A consulta conserva os campos existentes e acrescenta nome fantasia, modalidade, sede, datas de registro/cancelamento, motivo, fonte e snapshot quando disponíveis. `source_updated_at` é a data UTC do arquivo, não de edição individual. Ausência vira `not_in_latest_source`, não cancelamento inferido. Produtos/planos e rede credenciada continuam pendentes.
+O [guia de carga ANS](ANS_OPERATORS.md) descreve os arquivos ativos/cancelados e a validação antes de publicar. A consulta conserva os campos existentes e acrescenta nome fantasia, modalidade, sede, datas de registro/cancelamento, motivo, fonte e snapshot quando disponíveis. `source_updated_at` é a data UTC do arquivo, não de edição individual. Ausência vira `not_in_latest_source`, não cancelamento inferido. O catálogo nacional de planos tem fluxo próprio de carga completa; rede credenciada não integrada.
+
+## Planos ANS
+
+O [guia de planos](ANS_PLANS.md) descreve o arquivo oficial nacional, identidades, datas, capacidade e retomada. `plan_id` identifica o plano; `registration_code` preserva o código de registro/SCPA, inclusive letras e zeros, sem garantir unicidade. Situações: `active`, `suspended`, `cancelled`, `transferred`. O vínculo da operadora usa seu registro ANS; não há correspondência por nome ou relação inferida com estabelecimentos. `coverage_scope` é categoria, não lista de municípios. `source_updated_at` é a atualização do conjunto. Novos filtros retornam 503 antes da carga completa. O menu só aparece com `plans_ready=true` em `/sources`. A rotina de planos ainda não é agendada.

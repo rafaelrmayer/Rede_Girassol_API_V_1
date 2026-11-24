@@ -66,7 +66,7 @@ Rotas administrativas protegidas pelo token existente:
 - `GET /admin/ans/operators/state`: metadados do snapshot atual ou `snapshot: null`.
 - `POST /admin/ans/operators/snapshot`: lote completo, metadados e `expected_snapshot_id` para controle de concorrência. Limites reais de corpo são conferidos mesmo sem Content-Length.
 
-O pacote RapidAPI passa a **oito consultas**, incluindo operadoras, após a validação da primeira carga. O namespace `/rapidapi/v1/operators` exige o Proxy Secret existente. A publicação do marketplace continua separada; não exponha as rotas administrativas. Não é necessário alterar os endpoints anteriores; a nova consulta precisa ser adicionada/importada na definição da listagem quando os dados estiverem prontos.
+O pacote RapidAPI de operadoras foi ampliado para nove consultas com a definição de planos; a consulta de planos exige sua própria carga validada. O namespace `/rapidapi/v1/operators` exige o Proxy Secret existente. A publicação do marketplace continua separada; não exponha as rotas administrativas. Não é necessário alterar os endpoints anteriores; a nova consulta precisa ser adicionada/importada na definição da listagem quando os dados estiverem prontos.
 
 ## Atualização mensal
 
@@ -81,3 +81,7 @@ A execução manual continua com a opção de gravação desmarcada por padrão,
 Confira a primeira execução agendada em Actions → Preparar ou importar operadoras ANS. Resumo e histórico mostram se houve atualização ou somente conferência; artifacts permanecem por sete dias. Este código não configura alertas externos ou mensagens. Em repositórios públicos, o GitHub pode desabilitar workflows agendados após períodos de inatividade; se isso ocorrer, conferir e reativar pelo Actions.
 
 A versão atual das fontes pode mudar mais frequentemente pela ANS; verificar mensalmente é a frequência operacional escolhida para a Girassol, não uma afirmação sobre a periodicidade oficial. Planos, contatos CNES e curadoria de atendimento a TEA não passam a ser atualizados por esse agendamento.
+
+## Próxima integração: planos
+
+A carga nacional de características dos planos está preparada em um workflow manual separado. Consulte [ANS_PLANS.md](ANS_PLANS.md) antes de executar, especialmente capacidade do D1, limite diário e retomada. O cron desta página atualiza somente operadoras.
