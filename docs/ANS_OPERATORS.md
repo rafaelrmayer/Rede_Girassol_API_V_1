@@ -68,13 +68,16 @@ Rotas administrativas protegidas pelo token existente:
 
 O pacote RapidAPI passa a **oito consultas**, incluindo operadoras, após a validação da primeira carga. O namespace `/rapidapi/v1/operators` exige o Proxy Secret existente. A publicação do marketplace continua separada; não exponha as rotas administrativas. Não é necessário alterar os endpoints anteriores; a nova consulta precisa ser adicionada/importada na definição da listagem quando os dados estiverem prontos.
 
-## Atualização mensal preparada, ainda desativada
+## Atualização mensal
 
-O mesmo workflow já suporta uma futura execução agendada; o cron está **comentado**. Após validar a primeira carga manual em produção:
+A primeira carga e a repetição foram confirmadas pelo responsável em produção em **24/11/2026**. Após o merge da ativação, o workflow agenda a mesma rotina para **dia 2 de cada mês, às 08h17 UTC (05h17 de Brasília)**. O primeiro horário previsto depois desta alteração é **02/12/2026 às 05h17 de Brasília**. O GitHub pode atrasar uma execução; o cron não garante pontualidade.
 
-1. Habilitar a variável de repositório `ANS_MONTHLY_SYNC_ENABLED` com valor `true`.
-2. Em mudança revisada, ativar o bloco `schedule` indicado no workflow: dia 2 de cada mês às 08h17 UTC (05h17 de Brasília). O GitHub pode atrasar a execução.
-3. A execução agendada usa a mesma validação, trava de concorrência, comparação, publicação atômica e artifact, sem inputs ou segredo em texto.
-4. Conferir o primeiro agendamento e acompanhar falhas no Actions. Este código não configura alertas externos, envio de mensagens nem repetição de POST.
+O agendamento roda apenas na branch principal e publica usando o secret de importação já configurado. Usa a mesma validação, trava de concorrência, comparação, transação e conferência da rotina manual. Arquivos iguais produzem `unchanged`; falhas de preparação, fonte antiga, redução inesperada ou erro de gravação preservam a base anterior conforme as regras acima. Não há repetição automática de POST.
 
-A guarda da variável impede publicação por agendamento enquanto ela não estiver habilitada. Nesta entrega **não existe agendamento ativo**. A versão atual das fontes pode ser atualizada mais frequentemente pela ANS; verificar mensalmente é a frequência operacional escolhida para a Girassol, não uma afirmação sobre a periodicidade oficial.
+**Não precisa criar variável para ativar.** A execução agendada fica habilitada por padrão; para pausá-la, criar ou alterar a variável de repositório `ANS_MONTHLY_SYNC_ENABLED` para o texto `false` em Settings → Secrets and variables → Actions → Variables. A variável não é um segredo. Para retomar, remover a variável ou usar `true`. Essa pausa não impede a execução manual pelo Run workflow.
+
+A execução manual continua com a opção de gravação desmarcada por padrão, permitindo só preparar e conferir o artifact. O agendamento publica automaticamente, sem depender de inputs manuais.
+
+Confira a primeira execução agendada em Actions → Preparar ou importar operadoras ANS. Resumo e histórico mostram se houve atualização ou somente conferência; artifacts permanecem por sete dias. Este código não configura alertas externos ou mensagens. Em repositórios públicos, o GitHub pode desabilitar workflows agendados após períodos de inatividade; se isso ocorrer, conferir e reativar pelo Actions.
+
+A versão atual das fontes pode mudar mais frequentemente pela ANS; verificar mensalmente é a frequência operacional escolhida para a Girassol, não uma afirmação sobre a periodicidade oficial. Planos, contatos CNES e curadoria de atendimento a TEA não passam a ser atualizados por esse agendamento.
