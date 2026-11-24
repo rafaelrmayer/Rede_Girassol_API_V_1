@@ -26,7 +26,7 @@ describe('national plans snapshots',()=>{
   const page=(await call('/v1/plans?registration_code=SCPA-001&limit=1')).body;expect(page).toMatchObject({total:2,count:1,pagination:{next_offset:1}});
   expect(page.results[0]).toMatchObject({ans_code:'000001',registration_code:'SCPA-001',registered_on:null,operator_name:'Operadora fictícia',snapshot_id:p.snapshot_id});
   expect((await call('/sources')).body.sources.find((s:any)=>s.id==='ans')).toMatchObject({plans_ready:true,plans_count:2,plans_source_date:'2026-11-24'});
-  expect((await call('/rapidapi/v1/plans?status=transferred')).body.total).toBe(1);
+  expect((await call('/rapidapi/v1/plans?status=transferred')).status).toBe(404);
  });
  it('keeps the previous public snapshot during staging, records changes and absent IDs without inventing cancellations',async()=>{
   const p=await packageOf([[row,{...row,plan_id:'10000002'},{...row,plan_id:'10000003'},{...row,plan_id:'10000004'},{...row,plan_id:'10000005'},{...row,plan_id:'10000006'},{...row,plan_id:'10000007'},{...row,plan_id:'10000008'},{...row,plan_id:'10000009'},{...row,plan_id:'10000010'}]]);await publish(p);

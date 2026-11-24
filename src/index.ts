@@ -43,7 +43,7 @@ export default {
     let path = url.pathname;
     if (path === "/rapidapi" || path.startsWith("/rapidapi/")) {
       const target = path.slice("/rapidapi".length);
-      const allowed = ["/health", "/sources", "/v1/places", "/v1/autism-support", "/v1/rehabilitation", "/v1/support-guide", "/v1/operators", "/v1/plans"].includes(target)
+      const allowed = ["/health", "/sources", "/v1/places", "/v1/autism-support", "/v1/rehabilitation", "/v1/support-guide", "/v1/operators"].includes(target)
         || /^\/v1\/places\/[^/]+$/.test(target);
       if (!allowed) return json({error: "not_found"}, 404);
       if (request.method !== "GET") return json({error: "method_not_allowed"}, 405);

@@ -66,7 +66,7 @@ Rotas administrativas protegidas pelo token existente:
 - `GET /admin/ans/operators/state`: metadados do snapshot atual ou `snapshot: null`.
 - `POST /admin/ans/operators/snapshot`: lote completo, metadados e `expected_snapshot_id` para controle de concorrência. Limites reais de corpo são conferidos mesmo sem Content-Length.
 
-O pacote RapidAPI de operadoras foi ampliado para nove consultas com a definição de planos; a consulta de planos exige sua própria carga validada. O namespace `/rapidapi/v1/operators` exige o Proxy Secret existente. A publicação do marketplace continua separada; não exponha as rotas administrativas. Não é necessário alterar os endpoints anteriores; a nova consulta precisa ser adicionada/importada na definição da listagem quando os dados estiverem prontos.
+O pacote RapidAPI mantém oito consultas, incluindo operadoras. Planos estão pausados e fora do pacote. O namespace `/rapidapi/v1/operators` exige o Proxy Secret existente. A publicação do marketplace continua separada; não exponha as rotas administrativas. Não é necessário alterar os endpoints anteriores; a nova consulta precisa ser adicionada/importada na definição da listagem quando os dados estiverem prontos.
 
 ## Atualização mensal
 
@@ -84,4 +84,4 @@ A versão atual das fontes pode mudar mais frequentemente pela ANS; verificar me
 
 ## Próxima integração: planos
 
-A carga nacional de características dos planos está preparada em um workflow manual separado. Consulte [ANS_PLANS.md](ANS_PLANS.md) antes de executar, especialmente capacidade do D1, limite diário e retomada. O cron desta página atualiza somente operadoras.
+A carga nacional de características dos planos foi pausada em 24/11/2026 após 15 mil registros em staging. Não executar novas cargas agora; o workflow manual está bloqueado por padrão. Consulte [ANS_PLANS.md](ANS_PLANS.md) antes de executar, especialmente capacidade do D1, limite diário e retomada. O cron desta página atualiza somente operadoras.

@@ -1,6 +1,18 @@
-# Catálogo nacional de planos ANS
+# Catálogo nacional de planos ANS — pausado
 
-Esta integração prepara **todos os registros** do arquivo oficial de características dos produtos: ativos, suspensos, cancelados e transferidos. A primeira carga remota ainda precisa ser executada e conferida pelo responsável. A preparação local de 24/11/2026 encontrou **166.759 planos**, divididos em 668 partes; isso não comprova que a carga já esteja em produção.
+Esta integração prepara **todos os registros** do arquivo oficial de características dos produtos: ativos, suspensos, cancelados e transferidos. A primeira carga remota foi iniciada, mas não concluída. A preparação local de 24/11/2026 encontrou **166.759 planos**, divididos em 668 partes; isso não comprova que a carga já esteja em produção.
+
+## Decisão vigente — 24/11/2026
+
+**Carga pausada por decisão do responsável.** A Girassol segue com estabelecimentos, reabilitação, apoio, orientações e operadoras ANS. Planos não integram o piloto nem o pacote RapidAPI atual de oito consultas.
+
+A execução [45418912923](https://github.com/rafaelrmayer/Rede_Girassol_API_V_1/actions/runs/45418912923) recebeu 60 partes (15 mil planos) e parou no teto diário previsto. Esses registros permanecem em staging e não estão públicos. A migração 0004 já foi aplicada pelo responsável. Nada foi apagado e nenhuma limpeza remota é feita por esta pausa.
+
+**Não retomar o envio amanhã nem iniciar pacotes novos.** O job de importação fica bloqueado por padrão; uma execução manual apenas informa a pausa enquanto a variável de repositório `ANS_PLANS_IMPORT_ENABLED` não for `true`. Não definir essa variável agora. O workflow de operadoras e seu cron mensal continuam independentes e ativos.
+
+Para uma futura retomada, revisar capacidade, armazenamento e a política de retenção, conferir se o artifact ainda existe (30 dias) e a atualidade do arquivo congelado. Só após decidir retomar, definir `ANS_PLANS_IMPORT_ENABLED=true` nas variáveis do repositório e seguir o roteiro técnico abaixo. O número da execução não garante a conservação do artifact após seu prazo. O código e a rota canônica permanecem para compatibilidade; `/rapidapi/v1/plans` retorna 404.
+
+As seções seguintes documentam a implementação preservada e **não são instruções para executar a carga agora**.
 
 ## Fonte, identidade e limites
 
@@ -54,6 +66,6 @@ Snapshots antigos e staging interrompido **consomem armazenamento** e ficam pres
 
 ## RapidAPI e atualização futura
 
-A definição preparada passa a **nove consultas GET**, com planos no namespace protegido `/rapidapi/v1/plans`. Os caminhos administrativos continuam fora do gateway. A importação da nova definição e a publicação na conta RapidAPI são manuais e separadas da carga. Adicionar planos ao marketplace após a conferência remota do catálogo nacional.
+A definição atual contém **oito consultas GET**, sem planos. O namespace `/rapidapi/v1/plans` está fora do gateway durante a pausa. Os caminhos administrativos continuam fora do gateway. A importação da nova definição e a publicação na conta RapidAPI são manuais e separadas da carga. Uma eventual inclusão futura exige decisão de retomada, conferência remota do catálogo completo e atualização separada do pacote/gateway.
 
 O workflow de planos é **manual**, sem cron. O cron mensal de **operadoras** continua ativo conforme [ANS_OPERATORS.md](ANS_OPERATORS.md). Automatizar planos fica para depois da primeira carga e repetição validadas, da conferência de capacidade e da política de retenção; não anunciar atualização mensal automática de planos nesta etapa.
