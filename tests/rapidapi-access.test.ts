@@ -14,7 +14,7 @@ describe('dedicated RapidAPI access',()=>{
   expect(await response.json()).toMatchObject({status:'ok',service:'Rede Girassol API'});
  });
  it('never exposes administration, the dashboard or arbitrary paths through the gateway prefix',async()=>{
-  for(const path of ['/admin/imports','/admin/import','/dashboard','/openapi.json','/unknown'])
+  for(const path of ['/admin/imports','/admin/import','/dashboard','/v1/plans','/openapi.json','/unknown'])
    expect((await get('/rapidapi'+path,env.RAPIDAPI_PROXY_SECRET)).status).toBe(404);
   expect((await get('/rapidapi/health',env.RAPIDAPI_PROXY_SECRET,env,'POST')).status).toBe(405);
  });

@@ -18,8 +18,14 @@ concurrency:
   group: ans-plans-production
   cancel-in-progress: false
 jobs:
+  paused:
+    if: vars.ANS_PLANS_IMPORT_ENABLED != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Informar pausa do catálogo de planos
+        run: echo 'Catálogo de planos pausado por decisão do responsável. Nenhum download ou envio será executado. Operadoras seguem no workflow próprio. Consulte docs/ANS_PLANS.md antes de uma futura retomada.' >> "$GITHUB_STEP_SUMMARY"
   plans:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && vars.ANS_PLANS_IMPORT_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:

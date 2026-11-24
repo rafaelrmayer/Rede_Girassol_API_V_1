@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-EXCLUDED = set()
+EXCLUDED = {'/v1/plans'}
 
 
 def prepare(document):
@@ -22,7 +22,7 @@ def prepare(document):
     result['info']['description'] = ('Catálogo parcial de estabelecimentos e observações históricas de reabilitação, '
         'atendimento a TEA documentado, contatos publicados e orientações experimentais de acesso. '
         'Cobertura inicial limitada a cargas de Curitiba/PR; não confirma vagas, rede credenciada ou atendimento a todas as idades. '
-        'Operadoras e características cadastrais nacionais de planos ANS dependem das respectivas cargas completas validadas; rede credenciada não integrada. Os resumos não usam geração por IA.')
+        'Operadoras ANS conforme carga validada; catálogo de planos pausado e fora deste piloto. Rede credenciada não integrada. Os resumos não usam geração por IA.')
     # Retain only referenced component definitions, including transitive refs.
     needed = set()
     def visit(value):
@@ -49,7 +49,7 @@ def main():
     target = Path(args.output)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(prepare(json.loads((ROOT/'openapi.json').read_text(encoding='utf-8'))),ensure_ascii=False,indent=2)+'\n', encoding='utf-8')
-    print('Definição de nove consultas do piloto preparada. Nenhuma publicação realizada.')
+    print('Definição de oito consultas do piloto preparada. Nenhuma publicação realizada.')
 
 
 if __name__ == '__main__': main()
