@@ -97,7 +97,7 @@ Veja o [roteiro RapidAPI](docs/RAPIDAPI.md), a [definição atualizada de oito c
 - **IBGE:** conferência do nome do município e correspondência com UF nos preparadores.
 - **Prefeitura de Curitiba:** informações explícitas de atendimento e orientações de acesso.
 - **Páginas institucionais e CNES:** contatos com procedência individual.
-- **ANS:** integração de operadoras ativas/canceladas implementada, com primeira carga remota a validar pelo workflow. Produtos/planos e rede credenciada ainda pendentes.
+- **ANS:** integração de operadoras ativas/canceladas implementada, com primeira carga e repetição confirmadas em produção em 24/11/2026. Produtos/planos e rede credenciada ainda pendentes.
 
 A curadoria de autismo é independente da classificação de reabilitação. **Reabilitação intelectual não confirma atendimento a TEA**, assim como cadastro CNES não comprova vínculo com plano de saúde ou habilitação como CER. A competência histórica não significa oferta atual, e `imported_at` não substitui a data da fonte.
 
@@ -159,12 +159,12 @@ A verificação automática do repositório executa testes TypeScript, Python, c
 ## Próximas etapas
 
 1. Concluir a revisão documental e a publicação no RapidAPI.
-2. Validar a primeira carga de operadoras ANS no ambiente remoto e depois integrar produtos/planos, com fonte, situação e data.
-3. Após a validação manual, habilitar a rotina mensal de operadoras ANS: validar arquivos, comparar inclusões/alterações/inativações, preservar a base anterior em caso de erro e registrar histórico.
-4. Validar primeiro a carga manual; **só depois ativar o agendamento mensal**.
+2. Integrar produtos/planos ANS, com fonte, situação e data; a primeira carga e a repetição de operadoras já foram confirmadas em produção.
+3. Acompanhar a atualização mensal de operadoras ANS, com validação, comparação de alterações e histórico.
+4. Conferir a primeira execução agendada, prevista para **02/12/2026 às 05h17 de Brasília**, sujeita a atraso do GitHub.
 5. Manter revisão periódica de contatos e atendimento, priorizando informação útil em vez de ampliar o escopo sem necessidade.
 
-O processo mensal de operadoras ANS está preparado no workflow, mas o cron continua comentado e a ativação depende da validação manual. A associação entre estabelecimento e rede de um plano exigirá fonte específica adicional.
+Após o merge desta ativação, o workflow atualiza operadoras ANS todo dia 2 às 05h17 de Brasília. É possível pausar o agendamento com a variável `ANS_MONTHLY_SYNC_ENABLED=false`, sem impedir a execução manual. A associação entre estabelecimento e rede de um plano exigirá fonte específica adicional.
 
 ## Autor e licença
 
