@@ -42,6 +42,7 @@ beforeEach(() => {
   sqlite = new DatabaseSync(':memory:');
   sqlite.exec(readFileSync('migrations/0001_initial.sql', 'utf8'));
   sqlite.exec(readFileSync('migrations/0002_rehabilitation.sql', 'utf8'));
+  sqlite.exec(readFileSync('migrations/0003_ans_operators.sql', 'utf8'));
   env = {APP_ENV: 'test', DB: {
     prepare: statement,
     batch: async (items: any[]) => items.map(item => item.execute())

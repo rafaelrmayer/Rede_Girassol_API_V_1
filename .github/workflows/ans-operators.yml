@@ -1,0 +1,68 @@
+name: Preparar ou importar operadoras ANS
+on:
+  # Ativar somente após validar a carga manual e habilitar ANS_MONTHLY_SYNC_ENABLED.
+  # schedule:
+  #   - cron: '17 8 2 * *'  # Dia 2, 05h17 de Brasília (UTC-3). Pode atrasar.
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Gravar snapshot completo no banco remoto (desmarcado: só preparar e baixar artifact)'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: ans-operators-production
+  cancel-in-progress: false
+jobs:
+  operators:
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || vars.ANS_MONTHLY_SYNC_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Testar preparação e importação
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Conferir API antes do download
+        if: github.event_name == 'schedule' || inputs.publish
+        env:
+          IMPORT_TOKEN: ${{ secrets.REDE_GIRASSOL_IMPORT_TOKEN }}
+        run: python3 scripts/publish_ans_operators.py --check-only
+      - name: Preparar arquivos oficiais completos (ativas e canceladas)
+        run: python3 scripts/prepare_ans_operators.py --output data/ans-operadoras.json
+      - name: Publicar snapshot atômico e conferir hash
+        if: github.event_name == 'schedule' || inputs.publish
+        env:
+          IMPORT_TOKEN: ${{ secrets.REDE_GIRASSOL_IMPORT_TOKEN }}
+        run: python3 scripts/publish_ans_operators.py --file data/ans-operadoras.json --output data/ans-comprovante.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ans-operadoras-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/ans-operadoras.json
+            data/ans-comprovante.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Resumo da carga
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          payload=json.loads(Path('data/ans-operadoras.json').read_text())
+          m=payload['metadata']
+          receipt=Path('data/ans-comprovante.json')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as summary:
+              summary.write(f'## Operadoras ANS\n\n{m["active_count"]} ativas e {m["cancelled_count"]} canceladas nos arquivos preparados.\n\n')
+              summary.write(f'Data do arquivo ativo: {m["active_source_date"]}; cancelado: {m["cancelled_source_date"]}. Datas do arquivo, não de cada operadora.\n\n')
+              if receipt.exists():
+                  result=json.loads(receipt.read_text())
+                  summary.write(f'Snapshot **{result["status"]}**; {result["records_verified"]} registros conferidos pelo hash e contagem. Mudanças: `{result["changes"]}`.\n\n')
+              else:summary.write('**Somente preparação: nenhum registro foi gravado.**\n\n')
+              summary.write('Artifact disponível por sete dias. Município e UF representam a sede, não rede credenciada. O agendamento mensal ainda não está ativado.\n')
+          PY

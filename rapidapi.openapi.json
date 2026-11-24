@@ -3,7 +3,7 @@
   "info": {
     "title": "Rede Girassol API — piloto de consultas",
     "version": "0.1.0",
-    "description": "Catálogo parcial de estabelecimentos e observações históricas de reabilitação, atendimento a TEA documentado, contatos publicados e orientações experimentais de acesso. Cobertura inicial limitada a cargas de Curitiba/PR; não confirma vagas, rede credenciada ou atendimento a todas as idades. Operadoras e planos ANS não integram este piloto. Os resumos não usam geração por IA.",
+    "description": "Catálogo parcial de estabelecimentos e observações históricas de reabilitação, atendimento a TEA documentado, contatos publicados e orientações experimentais de acesso. Cobertura inicial limitada a cargas de Curitiba/PR; não confirma vagas, rede credenciada ou atendimento a todas as idades. Operadoras ANS dependem da carga completa validada; planos e rede credenciada não integram este piloto. Os resumos não usam geração por IA.",
     "contact": {
       "name": "Rafael Ricardo Mayer",
       "url": "https://github.com/rafaelrmayer"
@@ -551,6 +551,196 @@
           },
           "503": {
             "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/operators": {
+      "get": {
+        "operationId": "listOperators",
+        "tags": [
+          "Operadoras"
+        ],
+        "summary": "Pesquisar operadoras ANS importadas",
+        "description": "Consulta a última carga validada dos arquivos ANS de operadoras ativas e canceladas. status active/cancelled reflete o arquivo; not_in_latest_source é ausência, não cancelamento inferido. Cidade/UF são da sede, não cobertura. source_updated_at é Last-Modified do arquivo de origem, não uma alteração individual. Não associa prestadores a planos.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial no nome, com espaços externos removidos. Segue a semântica LIKE do SQLite (% e _ são curingas).",
+            "schema": {
+              "type": "string"
+            },
+            "example": "hospital"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "description": "Nome parcial do município da sede, não área de cobertura.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "UF da sede; comparação em maiúsculas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Situação conforme carga: não encontrada não equivale a cancelada.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "cancelled",
+                "not_in_latest_source",
+                "unconfirmed"
+              ]
+            }
+          },
+          {
+            "name": "ans_code",
+            "in": "query",
+            "required": false,
+            "description": "Registro ANS como texto de seis dígitos.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{6}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de operadoras.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperatorPage"
+                },
+                "examples": {
+                  "empty": {
+                    "value": {
+                      "results": [],
+                      "count": 0,
+                      "total": 0,
+                      "pagination": {
+                        "limit": 20,
+                        "offset": 0,
+                        "has_more": false,
+                        "next_offset": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Paginação, filtros inválidos ou repetidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1132,6 +1322,17 @@
           "scope": {
             "type": "string",
             "description": "Limites conhecidos da integração, quando disponíveis."
+          },
+          "operators_ready": {
+            "type": "boolean"
+          },
+          "active_source_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelled_source_date": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -1271,6 +1472,74 @@
           "result"
         ]
       },
+      "Operator": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ans_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "Situação informada pela carga; unconfirmed é o padrão do banco."
+          },
+          "source_updated_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date",
+            "description": "Data UTC do Last-Modified do arquivo ANS para registros gerenciados pelo importador; não data de edição individual."
+          },
+          "trade_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "modality": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "registered_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelled_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellation_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "source_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "snapshot_id": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "ans_code",
+          "name",
+          "status",
+          "source_updated_at"
+        ]
+      },
       "PlacePage": {
         "type": "object",
         "properties": {
@@ -1305,6 +1574,38 @@
           "total",
           "pagination",
           "note"
+        ]
+      },
+      "OperatorPage": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Operator"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Quantidade de registros nesta página."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total correspondente aos filtros no banco atual; não é o total do CNES nacional."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          }
+        },
+        "required": [
+          "results",
+          "count",
+          "total",
+          "pagination"
         ]
       },
       "InvalidPagination": {

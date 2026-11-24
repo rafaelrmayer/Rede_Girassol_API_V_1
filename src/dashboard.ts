@@ -7,6 +7,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
   <meta name="theme-color" content="#173b32">
   <title>Rede Girassol · Painel</title>
   <style>
+    [hidden] {display:none !important;}
     :root {
       --green-950: #142f29;
       --green-900: #173b32;
@@ -169,6 +170,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
           <button type="button" data-view="guide"><span class="nav-icon" aria-hidden="true">?</span>Encontre apoio</button>
           <button type="button" data-view="autism"><span class="nav-icon" aria-hidden="true">☀</span>Autismo e apoio</button>
           <button type="button" data-view="rehabilitation"><span class="nav-icon" aria-hidden="true">◎</span>Reabilitação</button>
+          <button type="button" data-view="operators" id="operatorsNav" hidden><span class="nav-icon" aria-hidden="true">▦</span>Operadoras ANS</button>
           <button type="button" data-view="sources"><span class="nav-icon" aria-hidden="true">◎</span>Fontes e transparência</button>
         </nav>
       </div>
@@ -258,7 +260,20 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         <div class="panel table-panel"><div class="table-meta"><span id="rehabilitationMeta">Aguardando consulta</span><span>Fonte: CNES – Serviços especializados</span></div><div id="rehabilitationResults" aria-live="polite"><div class="empty"><strong>Consulta ainda não realizada</strong>Use os filtros para consultar os cadastros importados.</div></div><nav class="pager" aria-label="Paginação de reabilitação"><button class="refresh" type="button" id="rehabilitationPrevious" disabled>Anterior</button><span id="rehabilitationPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="rehabilitationNext" disabled>Próxima</button></nav></div>
       </section>
 
-<section class="view" id="sourcesView" aria-labelledby="viewTitle">
+      <section class="view" id="operatorsView" aria-labelledby="viewTitle">
+        <p class="intro">Pesquise operadoras ativas ou com registro cancelado conforme os arquivos oficiais ANS importados. Município e UF indicam a sede, não a área de cobertura. Esta consulta não confirma rede credenciada, planos disponíveis ou qualidade de atendimento.</p>
+        <p id="operatorsReference" class="panel-copy">Datas dos arquivos: consulte Fontes e transparência.</p>
+        <form id="operatorsForm" class="toolbar">
+          <label class="search-wrap"><span class="sr-only">Razão social da operadora</span><input type="search" id="operatorsQuery" placeholder="Razão social" autocomplete="off"></label>
+          <label class="search-wrap"><span class="sr-only">Município da sede da operadora</span><input type="search" id="operatorsCity" placeholder="Município da sede" autocomplete="off"></label>
+          <label class="search-wrap" style="flex:0 1 110px"><span class="sr-only">UF da sede</span><input id="operatorsState" maxlength="2" placeholder="UF da sede" autocomplete="off"></label>
+          <label class="search-wrap"><span class="sr-only">Situação cadastral ANS</span><select id="operatorsStatus"><option value="">Todas as situações</option><option value="active">Ativas na fonte</option><option value="cancelled">Registro cancelado na fonte</option><option value="not_in_latest_source">Não encontradas na última fonte</option></select></label>
+          <button type="submit" class="search-btn">Pesquisar</button>
+        </form>
+        <div class="panel table-panel"><div class="table-meta"><span id="operatorsMeta">Aguardando consulta</span><span>Fonte: ANS — CADOP</span></div><div id="operatorsResults" aria-live="polite"></div><nav class="pager" aria-label="Paginação de operadoras"><button class="refresh" type="button" id="operatorsPrevious" disabled>Anterior</button><span id="operatorsPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="operatorsNext" disabled>Próxima</button></nav></div>
+      </section>
+
+      <section class="view" id="sourcesView" aria-labelledby="viewTitle">
         <p class="intro">A Rede Girassol pretende utilizar fontes oficiais e manter origem, data de referência e limites de cada conjunto de dados. A integração só será tratada como concluída depois de implementada e validada.</p>
         <div class="source-grid" id="allSources"><div class="panel"><p class="panel-copy">Consultando as fontes documentadas…</p></div></div>
         <div class="section-head"><div><h2>Critérios de transparência</h2><p>Regras que orientam a apresentação das informações.</p></div></div>
@@ -281,9 +296,10 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       guide: "Encontre apoio · Experimental",
       autism: "Autismo e apoio",
       rehabilitation: "Serviços de reabilitação",
+      operators: "Operadoras ANS",
       sources: "Fontes e transparência"
     };
-    const views = ["guide", "overview", "places", "autism", "rehabilitation", "sources"];
+    const views = ["guide", "overview", "places", "autism", "rehabilitation", "operators", "sources"];
     const state = { sources: [], summary: {} };
     const byId = function (id) { return document.getElementById(id); };
 
@@ -474,6 +490,13 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     }
     const pageSize = 20;
     const collections = {
+      operators: {endpoint:"/v1/operators",emptyTitle:"Nenhuma operadora correspondente aos filtros",columns:[
+        {label:"Razão social",value:"name",primary:true},{label:"Registro ANS",value:"ans_code"},{label:"Nome fantasia",value:"trade_name"},
+        {label:"Modalidade",value:"modality"},{label:"Sede",value:function(r){return [r.city,r.state].filter(Boolean).join(" / ");}},
+        {label:"Situação na fonte",value:function(r){return {active:"Ativa",cancelled:"Registro cancelado",not_in_latest_source:"Não encontrada na última fonte",unconfirmed:"Não verificada"}[r.status] || r.status;}},
+        {label:"Registro na ANS",value:"registered_on"},{label:"Cancelamento",value:"cancelled_on"},{label:"Motivo informado",value:"cancellation_reason"},
+        {label:"Data do arquivo ANS",value:"source_updated_at"},{label:"Fonte",value:function(){return "Arquivo oficial ↗";},link:function(r){return r.source_url;}}
+      ]},
       places: { endpoint: "/v1/places", emptyTitle: "Nenhum registro disponível", columns: [
         { label: "Estabelecimento", value: "name", primary: true },
         { label: "CNES", value: "cnes_code" },
@@ -565,6 +588,12 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         reference_month: byId("rehabilitationMonth").value.replace("-", "")};
     }
     function loadRehabilitation() { return loadCollection("rehabilitation", rehabilitationFilters(), 0); }
+    function updateAnsAvailability() {
+      const ans=state.sources.find(function(source){return source.id === "ans";});
+      byId("operatorsNav").hidden=!(ans && ans.operators_ready);
+      if(ans && ans.operators_ready) setText("operatorsReference","Arquivos consultados: ativas " + ans.active_source_date + "; canceladas " + ans.cancelled_source_date + ". Datas dos arquivos, não atualização individual de cada operadora.");
+    }
+    function loadOperators() {return loadCollection("operators",{q:byId("operatorsQuery").value.trim(),city:byId("operatorsCity").value.trim(),state:byId("operatorsState").value.trim(),status:byId("operatorsStatus").value},0);}
     async function refreshOverview() {
       showApiStatus(false, "Consultando API…");
       const healthPromise = api("/health");
@@ -587,6 +616,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       } else {
         state.sources = [];
       }
+      updateAnsAvailability();
       renderSources("overviewSources");
       renderSources("allSources");
     }
@@ -648,8 +678,10 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       if (view === "places") loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
       if (view === "autism") loadAutism();
       if (view === "rehabilitation") loadRehabilitation();
+      if (view === "operators") loadOperators();
       if (view === "sources") api("/sources").then(function (data) {
         state.sources = Array.isArray(data.sources) ? data.sources : [];
+        updateAnsAvailability();
         renderSources("allSources");
       }).catch(function () {
         byId("allSources").replaceChildren(errorBox("Não foi possível consultar as fontes documentadas na API."));
@@ -663,6 +695,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
     });
     byId("autismForm").addEventListener("submit", function (event) {event.preventDefault(); loadAutism();});
+    byId("operatorsForm").addEventListener("submit",function(event){event.preventDefault();loadOperators();});
     byId("rehabilitationForm").addEventListener("submit", function (event) { event.preventDefault(); loadRehabilitation(); });
     byId("refreshAll").addEventListener("click", async function () {
       await refreshOverview();
@@ -670,6 +703,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       if (active && active.id === "placesView") loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
       if (active && active.id === "autismView") loadAutism();
       if (active && active.id === "rehabilitationView") loadRehabilitation();
+      if (active && active.id === "operatorsView") loadOperators();
     });
     refreshOverview();
   </script>
