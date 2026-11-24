@@ -2,7 +2,7 @@
 
 ## Pacote preparado
 
-Use [rapidapi.openapi.json](../rapidapi.openapi.json) para importar a definição do **piloto de consultas**. Ele contém oito operações GET: saúde do serviço, fontes, lista/detalhe de estabelecimentos, Autismo e apoio, reabilitação, orientações de acesso e operadoras ANS. Não inclui rotas administrativas nem a consulta de planos ainda sem carga.
+Use [rapidapi.openapi.json](../rapidapi.openapi.json) para importar a definição do **piloto de consultas**. Ele contém nove operações GET: saúde do serviço, fontes, lista/detalhe de estabelecimentos, Autismo e apoio, reabilitação, orientações de acesso, operadoras ANS e características cadastrais nacionais de planos. Não inclui rotas administrativas. Adicionar planos à listagem depois de validar a carga remota completa.
 
 A definição canônica [openapi.json](../openapi.json) continua com nove operações para compatibilidade da API existente. Para atualizar o pacote após mudanças na definição canônica:
 
@@ -10,7 +10,7 @@ A definição canônica [openapi.json](../openapi.json) continua com nove opera�
 python3 scripts/prepare_rapidapi.py --output rapidapi.openapi.json
 ```
 
-O gerador remove as rotas pendentes e os componentes que deixam de ser referenciados, sem alterar o contrato da API principal. O teste Python detecta pacote desatualizado. Não publica nada automaticamente.
+O gerador conserva somente consultas e os componentes referenciados, sem alterar o contrato da API principal. O teste Python detecta pacote desatualizado. Não publica nada automaticamente.
 
 ## Texto inicial para o cadastro
 
@@ -18,7 +18,7 @@ O gerador remove as rotas pendentes e os componentes que deixam de ser referenci
 
 **Descrição curta:** Consulta a dados públicos de estabelecimentos de saúde, reabilitação e apoio a pessoas autistas, com fontes, datas e contatos institucionais publicados.
 
-**Descrição detalhada:** Projeto independente em desenvolvimento. Organiza cadastros CNES importados e limitados, observações mensais de reabilitação e curadoria documental de atendimento a TEA. A cobertura inicial é parcial, com dados de Curitiba/PR. Contatos publicados não comprovam linha ativa ou agendamento. Atendimento documentado não significa vaga disponível ou cobertura por plano. Reabilitação intelectual não confirma, sozinha, atendimento a pessoas autistas. O módulo Encontre apoio oferece resumos revisados, sem geração por IA. Operadoras ANS dependem da primeira carga completa validada. Produtos/planos ANS e rede credenciada ainda não integram este piloto.
+**Descrição detalhada:** Projeto independente em desenvolvimento. Organiza cadastros CNES importados e limitados, observações mensais de reabilitação e curadoria documental de atendimento a TEA. A cobertura inicial é parcial, com dados de Curitiba/PR. Contatos publicados não comprovam linha ativa ou agendamento. Atendimento documentado não significa vaga disponível ou cobertura por plano. Reabilitação intelectual não confirma, sozinha, atendimento a pessoas autistas. O módulo Encontre apoio oferece resumos revisados, sem geração por IA. Operadoras ANS têm primeira carga confirmada; o catálogo nacional de características dos planos depende da carga completa validada. Rede credenciada não integrada.
 
 **Origem técnica atual:** `https://rede-girassol-api-v-1.rafael10mayer.workers.dev`
 
@@ -27,16 +27,16 @@ Não anunciar cobertura nacional, busca semântica, diagnóstico, vagas ou rede 
 ## Configuração no navegador
 
 1. Entrar no RapidAPI Studio e criar uma API inicialmente privada/rascunho.
-2. Importar o arquivo `rapidapi.openapi.json` (baixar o arquivo bruto do GitHub após merge) e conferir as oito operações.
+2. Importar o arquivo `rapidapi.openapi.json` (baixar o arquivo bruto do GitHub após merge) e conferir as nove operações.
 3. Conferir o endereço de origem nas configurações do gateway; os caminhos devem ser preservados.
 4. Testar `/health`, `/v1/places?state=PR&city=Curitiba&limit=2`, `/v1/autism-support?city=Curitiba`, `/v1/rehabilitation?reference_month=202607&limit=2` e `/v1/support-guide` pelo playground. Comparar corpo e status com a documentação; os totais dependem das cargas e dos prazos de revisão.
-5. Definir modalidade de acesso e limites no RapidAPI antes de tornar a listagem pública. Não há plano pago, preço ou cota escolhidos por este pacote.
+5. Definir modalidade de acesso e limites no RapidAPI antes de tornar a listagem pública. O responsável confirmou o plano Basic gratuito: US$ 0/mês, 1.000 consultas/mês com Hard Limit e 10 consultas/minuto. Conferir separadamente a taxa de banda da plataforma, que não é receita da Girassol.
 
-Os nomes das opções podem variar na interface. Nenhuma conta RapidAPI foi acessada e nenhuma listagem foi criada ou publicada por esta alteração.
+Os nomes das opções podem variar na interface. A listagem existente foi criada e testada pelo responsável; o último estado confirmado é privado. Esta alteração no repositório não importa definições nem publica na conta.
 
 ## Acesso separado com Proxy Secret
 
-O Worker oferece as oito consultas do piloto também sob `/rapidapi`, exigindo o cabeçalho que o próprio gateway adiciona. As rotas públicas antigas e o painel continuam acessíveis. O namespace não expõe importação, administração, documentação ou a rota de planos.
+O Worker oferece as nove consultas do piloto também sob `/rapidapi`, exigindo o cabeçalho que o próprio gateway adiciona. As rotas públicas antigas e o painel continuam acessíveis. O namespace não expõe importação, administração ou documentação.
 
 Após merge/deploy:
 
@@ -55,7 +55,7 @@ O valor secreto não deve ir ao chat, repositório, exemplos ou screenshots. O c
 
 ## Definir limites na conta
 
-Em **Monetize**, conferir o plano e as opções que a conta oferece. Proposta inicial para avaliação: acesso gratuito, sem excedentes pagos, teto de 1.000 chamadas/mês e 10 chamadas/minuto, se a interface permitir. São valores sugeridos, ainda não configurados ou escolhidos pelo responsável. Confirmar unidade, teto efetivo e tratamento de excedentes antes de salvar.
+Em **Monetize**, o responsável confirmou Basic a **US$ 0/mês**, **1.000 chamadas/mês com Hard Limit** e **10 chamadas/minuto**. A tela também informa uma taxa de banda da plataforma após a franquia; isso é separado do preço da API. Conferir a condição atual na conta antes de publicar, sem anunciar ausência absoluta de qualquer taxa da plataforma. Nenhuma cobrança nova foi configurada por esta alteração.
 
 A [documentação de rate limiting](https://docs.rapidapi.com/v2.0/docs/rate-limiting) descreve configuração por plano e observa que o proprietário pode ter uma assinatura de teste ilimitada. Os testes feitos com a conta proprietária validam respostas, não demonstram bloqueio das cotas de consumidor. Não escolher plano cobrado ou cobrança por excedente sem decisão explícita do responsável.
 
@@ -70,8 +70,18 @@ A revisão inicial encontrou avisos de licença no portal e orientação geral s
 
 ## Sequência para a ANS
 
-A preparação, importação atômica e testes de operadoras estão implementados; falta validar a primeira carga no ambiente remoto. Depois seguir para produtos/planos e seus vínculos com operadoras. Só reativar as telas quando houver dados reais consultáveis e informação útil. Cadastro de estabelecimento, operadora ou produto não basta para afirmar vínculo de rede credenciada: esse relacionamento exige uma fonte adicional específica.
+A primeira carga de operadoras e a repetição foram confirmadas em produção em 24/11/2026. O catálogo nacional de planos tem [workflow próprio de envio em partes](ANS_PLANS.md), ainda pendente de primeira carga remota. Só mostrar telas quando os respectivos dados estiverem completos. Nenhum desses cadastros comprova vínculo com rede credenciada.
 
 ## Adicionar operadoras após a carga validada
 
-A definição atualizada inclui `/v1/operators` e seus filtros (oito consultas no total). Ela não foi reimportada na conta RapidAPI por esta alteração. Primeiro executar e conferir a carga descrita em [ANS_OPERATORS.md](ANS_OPERATORS.md); depois adicionar/importar a operação na listagem, preservando Base URL com `/rapidapi`, Proxy Secret e plano já configurados. A importação no marketplace e a visibilidade continuam ações separadas. O menu de planos permanece ausente.
+A definição atualizada inclui `/v1/operators` e seus filtros (nove consultas no pacote preparado, incluindo planos). Ela não foi reimportada na conta RapidAPI por esta alteração. A carga de operadoras já foi confirmada; adicionar/importar a operação na listagem, preservando Base URL com `/rapidapi`, Proxy Secret e plano já configurados. A importação no marketplace e a visibilidade continuam ações separadas. O menu de planos só aparece após a carga nacional completa.
+
+## Pendências para concluir a listagem existente
+
+1. Adicionar/conferir a operação `/v1/operators`, ainda sem importação confirmada na conta. Após validar a carga nacional, adicionar `/v1/plans` com os filtros da definição preparada de nove consultas.
+2. Manter Base URL com `/rapidapi`, Proxy Secret e o plano gratuito já conferidos; testar as novas operações no playground.
+3. Atualizar descrições: CNES/curadoria parcial em Curitiba; características cadastrais nacionais de operadoras/planos conforme cargas; sem rede credenciada ou vagas confirmadas.
+4. Concluir a conferência documental já registrada em [SOURCE_REUSE_REVIEW.md](SOURCE_REUSE_REVIEW.md), com atribuições e condições efetivamente aplicáveis. Não declarar resposta/autorização específica ainda não obtida.
+5. O responsável confirma a declaração de direitos/termos e muda a visibilidade de privada para pública quando concluir a revisão. Teste com conta proprietária não demonstra acesso público nem aplicação das cotas a consumidores.
+
+O status público e a primeira carga nacional de planos precisam ser confirmados; o repositório não altera a conta RapidAPI automaticamente.

@@ -3,7 +3,7 @@
   "info": {
     "title": "Rede Girassol API — piloto de consultas",
     "version": "0.1.0",
-    "description": "Catálogo parcial de estabelecimentos e observações históricas de reabilitação, atendimento a TEA documentado, contatos publicados e orientações experimentais de acesso. Cobertura inicial limitada a cargas de Curitiba/PR; não confirma vagas, rede credenciada ou atendimento a todas as idades. Operadoras ANS dependem da carga completa validada; planos e rede credenciada não integram este piloto. Os resumos não usam geração por IA.",
+    "description": "Catálogo parcial de estabelecimentos e observações históricas de reabilitação, atendimento a TEA documentado, contatos publicados e orientações experimentais de acesso. Cobertura inicial limitada a cargas de Curitiba/PR; não confirma vagas, rede credenciada ou atendimento a todas as idades. Operadoras e características cadastrais nacionais de planos ANS dependem das respectivas cargas completas validadas; rede credenciada não integrada. Os resumos não usam geração por IA.",
     "contact": {
       "name": "Rafael Ricardo Mayer",
       "url": "https://github.com/rafaelrmayer"
@@ -30,11 +30,11 @@
     },
     {
       "name": "Operadoras",
-      "description": "Consultas preparadas; integração ANS pendente."
+      "description": "Situação cadastral e sede de operadoras conforme arquivos ANS importados."
     },
     {
       "name": "Planos",
-      "description": "Consultas preparadas; integração ANS pendente."
+      "description": "Características cadastrais nacionais conforme arquivo ANS; consulta disponível após carga completa validada."
     }
   ],
   "security": [],
@@ -149,7 +149,7 @@
           "Fontes"
         ],
         "summary": "Consultar fontes e estágio das integrações",
-        "description": "CNES possui carga manual e parcial. ANS continua com integração pendente. Esta rota não consulta diretamente as fontes nem contabiliza cobertura.",
+        "description": "Disponibilidade e datas das cargas locais. CNES e curadoria têm cobertura parcial; operadores e planos possuem flags de disponibilidade após cargas completas. Esta rota não consulta diretamente as fontes nem contabiliza cobertura assistencial.",
         "responses": {
           "200": {
             "description": "Fontes documentadas.",
@@ -688,6 +688,182 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "description": "Gateway ainda não configurado ou catálogo indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Método não permitido no acesso RapidAPI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/plans": {
+      "get": {
+        "operationId": "listPlans",
+        "tags": [
+          "Planos"
+        ],
+        "summary": "Consultar características cadastrais de planos ANS",
+        "description": "Catálogo nacional conforme carga completa validada da fonte ANS. ID_PLANO é a identidade única; registration_code preserva o código de registro/SCPA (pode ser alfanumérico e repetido entre operadoras). Situação active não garante comercialização, rede credenciada, atendimento a TEA ou cobertura de procedimento. coverage_scope é apenas a categoria de abrangência; municípios e prestadores não integrados. Antes da primeira carga completa, a consulta legada por q permanece disponível e os filtros novos retornam 503.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Pesquisa parcial no nome; máximo de 48 bytes UTF-8. % e _ são curingas LIKE. Parâmetros repetidos ou não suportados (como cidade/UF de cobertura) retornam 400.",
+            "schema": {
+              "type": "string",
+              "maxLength": 48
+            },
+            "example": "hospital"
+          },
+          {
+            "name": "ans_code",
+            "in": "query",
+            "required": false,
+            "description": "Registro ANS da operadora vinculada (seis dígitos; zeros preservados).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{6}$"
+            }
+          },
+          {
+            "name": "registration_code",
+            "in": "query",
+            "required": false,
+            "description": "Código do plano exato; preserve zeros e letras. Não é identidade única.",
+            "schema": {
+              "type": "string",
+              "maxLength": 30
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "query",
+            "required": false,
+            "description": "ID_PLANO: identidade única informada pela ANS.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,7}$"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Situação cadastral do plano na fonte, independente da situação da operadora.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "suspended",
+                "cancelled",
+                "transferred"
+              ]
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de produtos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanPage"
+                },
+                "examples": {
+                  "empty": {
+                    "value": {
+                      "results": [],
+                      "count": 0,
+                      "total": 0,
+                      "pagination": {
+                        "limit": 20,
+                        "offset": 0,
+                        "has_more": false,
+                        "next_offset": null
+                      },
+                      "note": "A presença de um produto não comprova rede credenciada atual."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidPagination"
           },
           "403": {
             "description": "Credencial do gateway ausente/inválida ou bloqueio de borda.",
@@ -1317,7 +1493,7 @@
           },
           "integration_status": {
             "type": "string",
-            "description": "partial para a carga CNES e mapping_pending para ANS nesta versão."
+            "description": "mapping_pending antes de qualquer carga ANS validada; partial para os conjuntos integrados com limitações explicitadas."
           },
           "scope": {
             "type": "string",
@@ -1332,6 +1508,17 @@
           },
           "cancelled_source_date": {
             "type": "string",
+            "nullable": true
+          },
+          "plans_ready": {
+            "type": "boolean"
+          },
+          "plans_source_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "plans_count": {
+            "type": "integer",
             "nullable": true
           }
         },
@@ -1540,6 +1727,78 @@
           "source_updated_at"
         ]
       },
+      "Plan": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "registration_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "CD_PLANO, código de registro ou SCPA, textual e não necessariamente único."
+          },
+          "status": {
+            "type": "string"
+          },
+          "operator_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "plan_id": {
+            "type": "string",
+            "description": "ID_PLANO da ANS, usado como identidade estável; difere de CD_PLANO."
+          },
+          "ans_code": {
+            "type": "string"
+          },
+          "contracting_type": {
+            "type": "string"
+          },
+          "segmentation": {
+            "type": "string"
+          },
+          "coverage_scope": {
+            "type": "string",
+            "description": "Categoria textual da fonte; não comprova cobertura em município ou prestador específico."
+          },
+          "accommodation": {
+            "type": "string"
+          },
+          "cost_sharing": {
+            "type": "string"
+          },
+          "status_changed_on": {
+            "type": "string"
+          },
+          "source_updated_at": {
+            "type": "string",
+            "description": "DT_ATUALIZACAO do conjunto ANS; não é data individual de edição do plano."
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "snapshot_id": {
+            "type": "string"
+          },
+          "registered_on": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Nulo nos planos anteriores à Lei 9.656/1998 sem data na fonte."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "registration_code",
+          "status",
+          "operator_name"
+        ]
+      },
       "PlacePage": {
         "type": "object",
         "properties": {
@@ -1606,6 +1865,42 @@
           "count",
           "total",
           "pagination"
+        ]
+      },
+      "PlanPage": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Plan"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Quantidade de registros nesta página."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total correspondente aos filtros no banco atual; não é o total do CNES nacional."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "results",
+          "count",
+          "total",
+          "pagination",
+          "note"
         ]
       },
       "InvalidPagination": {

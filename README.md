@@ -20,6 +20,7 @@ O painel oferece uma interface para as pessoas; a API permite que desenvolvedore
 | Reabilitação | Observações mensais do serviço CNES 135, com modalidade, competência e tipo próprio/terceiro. |
 | Contatos institucionais | Telefones com botão para ligar, e-mail/site quando conferidos, fonte e data de revisão. |
 | Encontre apoio · Experimental | Quatro orientações sobre acesso ao SUS, crianças/adolescentes, adultos e cuidadores, com resumos e passos. |
+| Planos ANS | Catálogo nacional preparado para carga completa; situações, características e vínculo por registro da operadora. Menu liberado após validação remota. |
 | Operadoras ANS | Consulta de cadastros ativos/cancelados após a primeira carga completa validada; filtros de sede e situação. |
 | API para desenvolvedores | Respostas JSON, filtros, paginação, OpenAPI e documentação interativa. |
 | Importação controlada | Scripts Python e GitHub Actions para preparar, validar, importar e conferir cargas CNES, com histórico. |
@@ -57,6 +58,7 @@ https://rede-girassol-api-v-1.rafael10mayer.workers.dev
 | GET | `/v1/places/{place_id}` | Detalhe por ID interno ou CNES de sete dígitos. |
 | GET | `/v1/autism-support` | Curadoria documental de atendimento a TEA; filtros `q`, `city`, `state`. |
 | GET | `/v1/rehabilitation` | Observações de reabilitação por nome, local, classificação, CNES, tipo e competência. |
+| GET | `/v1/plans` | Características cadastrais nacionais; filtros de plano, registro da operadora e situação, após carga completa. |
 | GET | `/v1/operators` | Operadoras ANS; filtros por razão social, sede, situação e registro ANS, após a carga validada. |
 | GET | `/v1/support-guide` | Corpus de orientações revisadas; sem parâmetros ou perguntas. |
 
@@ -71,7 +73,7 @@ GET /v1/rehabilitation?classification_code=002&reference_month=202607&limit=2&of
 
 As cinco listas aceitam `limit` de 1 a 100 (padrão 100) e `offset` como quantidade de registros a pular. Retornam `results`, `count`, `total` e `pagination`, com `has_more` e `next_offset`. Detalhes, erros e demais filtros estão no [guia da API](docs/API.md).
 
-A rota `/v1/plans` permanece na API canônica para compatibilidade, mas não possui carga nesta etapa e seu menu continua fora do painel. Operadoras ANS têm preparador e importador de snapshot completo; o menu só aparece após uma primeira carga confirmada. Veja o [guia ANS](docs/ANS_OPERATORS.md). As rotas administrativas exigem token próprio e não são oferecidas no marketplace.
+Planos ANS possuem preparação nacional, envio em partes retomáveis e publicação somente após conferência do conjunto completo. O menu só aparece após a carga remota validada; antes disso, a consulta legada por nome permanece disponível. Veja os guias de [planos](docs/ANS_PLANS.md) e [operadoras](docs/ANS_OPERATORS.md). As rotas administrativas exigem token e não são oferecidas no marketplace.
 
 ## RapidAPI: integração testada, listagem privada
 
@@ -89,7 +91,7 @@ A plataforma apresenta uma **Bandwidth Platform Fee** separada: franquia de 10.2
 
 A origem pública que atende o painel continua acessível. A proteção do namespace de integração não torna os dados exclusivos do RapidAPI e as cotas do gateway não são limites globais da infraestrutura.
 
-Veja o [roteiro RapidAPI](docs/RAPIDAPI.md), a [definição atualizada de oito consultas](rapidapi.openapi.json) e a [revisão documental das fontes](docs/SOURCE_REUSE_REVIEW.md).
+Veja o [roteiro RapidAPI](docs/RAPIDAPI.md), a [definição preparada de nove consultas](rapidapi.openapi.json) e a [revisão documental das fontes](docs/SOURCE_REUSE_REVIEW.md).
 
 ## Fontes, datas e limites
 
@@ -97,7 +99,7 @@ Veja o [roteiro RapidAPI](docs/RAPIDAPI.md), a [definição atualizada de oito c
 - **IBGE:** conferência do nome do município e correspondência com UF nos preparadores.
 - **Prefeitura de Curitiba:** informações explícitas de atendimento e orientações de acesso.
 - **Páginas institucionais e CNES:** contatos com procedência individual.
-- **ANS:** integração de operadoras ativas/canceladas implementada, com primeira carga e repetição confirmadas em produção em 24/11/2026. Produtos/planos e rede credenciada ainda pendentes.
+- **ANS:** integração de operadoras ativas/canceladas implementada, com primeira carga e repetição confirmadas em produção em 24/11/2026. Catálogo nacional de planos preparado para a primeira carga remota; rede credenciada não integrada.
 
 A curadoria de autismo é independente da classificação de reabilitação. **Reabilitação intelectual não confirma atendimento a TEA**, assim como cadastro CNES não comprova vínculo com plano de saúde ou habilitação como CER. A competência histórica não significa oferta atual, e `imported_at` não substitui a data da fonte.
 
@@ -107,6 +109,7 @@ Resumos, contatos e evidências de atendimento possuem revisão com prazo; itens
 
 | Guia | Conteúdo |
 |---|---|
+| [Planos ANS](docs/ANS_PLANS.md) | Fonte, carga nacional, limite diário de envio, retomada e conferência de capacidade. |
 | [Operadoras ANS](docs/ANS_OPERATORS.md) | Primeira carga completa, migração, diferenças entre fontes e atualização mensal preparada. |
 | [API](docs/API.md) | Contratos públicos, filtros, paginação e erros. |
 | [Reabilitação e autismo](docs/REHABILITATION.md) | Fontes, classificação, curadoria, migração e carga mensal histórica. |
@@ -159,12 +162,12 @@ A verificação automática do repositório executa testes TypeScript, Python, c
 ## Próximas etapas
 
 1. Concluir a revisão documental e a publicação no RapidAPI.
-2. Integrar produtos/planos ANS, com fonte, situação e data; a primeira carga e a repetição de operadoras já foram confirmadas em produção.
+2. Conferir capacidade do D1, aplicar a migração 0004 e validar a primeira carga nacional de planos; a primeira carga e repetição de operadoras já foram confirmadas em produção.
 3. Acompanhar a atualização mensal de operadoras ANS, com validação, comparação de alterações e histórico.
 4. Conferir a primeira execução agendada, prevista para **02/12/2026 às 05h17 de Brasília**, sujeita a atraso do GitHub.
 5. Manter revisão periódica de contatos e atendimento, priorizando informação útil em vez de ampliar o escopo sem necessidade.
 
-Após o merge desta ativação, o workflow atualiza operadoras ANS todo dia 2 às 05h17 de Brasília. É possível pausar o agendamento com a variável `ANS_MONTHLY_SYNC_ENABLED=false`, sem impedir a execução manual. A associação entre estabelecimento e rede de um plano exigirá fonte específica adicional.
+O workflow atualiza operadoras ANS todo dia 2 às 05h17 de Brasília. É possível pausar o agendamento com a variável `ANS_MONTHLY_SYNC_ENABLED=false`, sem impedir a execução manual. A associação entre estabelecimento e rede de um plano exigirá fonte específica adicional.
 
 ## Autor e licença
 

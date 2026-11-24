@@ -3,7 +3,7 @@
   "info": {
     "title": "Rede Girassol",
     "version": "0.1.0",
-    "description": "API experimental de consulta a informações públicas de saúde. A integração CNES é parcial e manual; ANS permanece pendente. A pesquisa usa somente os registros já importados, sem garantia de cobertura nacional ou municipal completa. Cadastro não comprova rede credenciada de planos. Exemplos de estabelecimentos são fictícios e indicam apenas o formato. Esta definição contém somente consultas públicas, sem operações de administração.",
+    "description": "API experimental de consulta a informações públicas de saúde. CNES e curadoria de atendimento têm cobertura parcial de Curitiba/PR. Operadoras ANS e características cadastrais nacionais de planos dependem das respectivas cargas completas validadas. Cadastro não comprova rede credenciada, comercialização, vagas ou atendimento a todas as idades. Exemplos de estabelecimentos são fictícios. Esta definição contém somente consultas públicas.",
     "contact": {
       "name": "Rafael Ricardo Mayer",
       "url": "https://github.com/rafaelrmayer"
@@ -30,11 +30,11 @@
     },
     {
       "name": "Operadoras",
-      "description": "Consultas preparadas; integração ANS pendente."
+      "description": "Situação cadastral e sede de operadoras conforme arquivos ANS importados."
     },
     {
       "name": "Planos",
-      "description": "Consultas preparadas; integração ANS pendente."
+      "description": "Características cadastrais nacionais conforme arquivo ANS; consulta disponível após carga completa validada."
     }
   ],
   "security": [],
@@ -84,7 +84,7 @@
           "Fontes"
         ],
         "summary": "Consultar fontes e estágio das integrações",
-        "description": "CNES possui carga manual e parcial. ANS continua com integração pendente. Esta rota não consulta diretamente as fontes nem contabiliza cobertura.",
+        "description": "Disponibilidade e datas das cargas locais. CNES e curadoria têm cobertura parcial; operadores e planos possuem flags de disponibilidade após cargas completas. Esta rota não consulta diretamente as fontes nem contabiliza cobertura assistencial.",
         "responses": {
           "200": {
             "description": "Fontes documentadas.",
@@ -465,18 +465,64 @@
         "tags": [
           "Planos"
         ],
-        "summary": "Pesquisar produtos de saúde suplementar",
-        "description": "A integração ANS ainda não foi implementada. A presença de um produto não comprova cobertura, comercialização ou rede credenciada atual. A operadora associada pode estar ausente.",
+        "summary": "Consultar características cadastrais de planos ANS",
+        "description": "Catálogo nacional conforme carga completa validada da fonte ANS. ID_PLANO é a identidade única; registration_code preserva o código de registro/SCPA (pode ser alfanumérico e repetido entre operadoras). Situação active não garante comercialização, rede credenciada, atendimento a TEA ou cobertura de procedimento. coverage_scope é apenas a categoria de abrangência; municípios e prestadores não integrados. Antes da primeira carga completa, a consulta legada por q permanece disponível e os filtros novos retornam 503.",
         "parameters": [
           {
             "name": "q",
             "in": "query",
             "required": false,
-            "description": "Pesquisa parcial no nome, com espaços externos removidos. Segue a semântica LIKE do SQLite (% e _ são curingas).",
+            "description": "Pesquisa parcial no nome; máximo de 48 bytes UTF-8. % e _ são curingas LIKE. Parâmetros repetidos ou não suportados (como cidade/UF de cobertura) retornam 400.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 48
             },
             "example": "hospital"
+          },
+          {
+            "name": "ans_code",
+            "in": "query",
+            "required": false,
+            "description": "Registro ANS da operadora vinculada (seis dígitos; zeros preservados).",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{6}$"
+            }
+          },
+          {
+            "name": "registration_code",
+            "in": "query",
+            "required": false,
+            "description": "Código do plano exato; preserve zeros e letras. Não é identidade única.",
+            "schema": {
+              "type": "string",
+              "maxLength": 30
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "query",
+            "required": false,
+            "description": "ID_PLANO: identidade única informada pela ANS.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,7}$"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Situação cadastral do plano na fonte, independente da situação da operadora.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "suspended",
+                "cancelled",
+                "transferred"
+              ]
+            }
           },
           {
             "$ref": "#/components/parameters/Limit"
@@ -520,6 +566,24 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "description": "Catálogo de planos ainda não configurado ou primeira carga completa pendente para os novos filtros.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -904,7 +968,7 @@
           },
           "integration_status": {
             "type": "string",
-            "description": "partial para a carga CNES e mapping_pending para ANS nesta versão."
+            "description": "mapping_pending antes de qualquer carga ANS validada; partial para os conjuntos integrados com limitações explicitadas."
           },
           "scope": {
             "type": "string",
@@ -919,6 +983,17 @@
           },
           "cancelled_source_date": {
             "type": "string",
+            "nullable": true
+          },
+          "plans_ready": {
+            "type": "boolean"
+          },
+          "plans_source_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "plans_count": {
+            "type": "integer",
             "nullable": true
           }
         },
@@ -1138,7 +1213,8 @@
           },
           "registration_code": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "CD_PLANO, código de registro ou SCPA, textual e não necessariamente único."
           },
           "status": {
             "type": "string"
@@ -1146,6 +1222,48 @@
           "operator_name": {
             "type": "string",
             "nullable": true
+          },
+          "plan_id": {
+            "type": "string",
+            "description": "ID_PLANO da ANS, usado como identidade estável; difere de CD_PLANO."
+          },
+          "ans_code": {
+            "type": "string"
+          },
+          "contracting_type": {
+            "type": "string"
+          },
+          "segmentation": {
+            "type": "string"
+          },
+          "coverage_scope": {
+            "type": "string",
+            "description": "Categoria textual da fonte; não comprova cobertura em município ou prestador específico."
+          },
+          "accommodation": {
+            "type": "string"
+          },
+          "cost_sharing": {
+            "type": "string"
+          },
+          "status_changed_on": {
+            "type": "string"
+          },
+          "source_updated_at": {
+            "type": "string",
+            "description": "DT_ATUALIZACAO do conjunto ANS; não é data individual de edição do plano."
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "snapshot_id": {
+            "type": "string"
+          },
+          "registered_on": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Nulo nos planos anteriores à Lei 9.656/1998 sem data na fonte."
           }
         },
         "required": [

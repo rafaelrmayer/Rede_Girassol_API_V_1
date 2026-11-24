@@ -1,3 +1,4 @@
+import {plansState,importAnsPlans,listAnsPlans} from './ans-plans';
 import {ansState,importAnsOperators,listAnsOperators} from './ans-operators';
 import { withContacts } from './contacts';
 import { supportGuide } from './support-guide';
@@ -15,6 +16,7 @@ export interface Env {
   IMPORT_TOKEN?: string;
   RAPIDAPI_PROXY_SECRET?: string;
   APP_ENV?: string;
+  ANS_PLANS_DAILY_RECORD_LIMIT?: string;
 }
 
 const json = (data: unknown, status = 200) =>
@@ -41,7 +43,7 @@ export default {
     let path = url.pathname;
     if (path === "/rapidapi" || path.startsWith("/rapidapi/")) {
       const target = path.slice("/rapidapi".length);
-      const allowed = ["/health", "/sources", "/v1/places", "/v1/autism-support", "/v1/rehabilitation", "/v1/support-guide", "/v1/operators"].includes(target)
+      const allowed = ["/health", "/sources", "/v1/places", "/v1/autism-support", "/v1/rehabilitation", "/v1/support-guide", "/v1/operators", "/v1/plans"].includes(target)
         || /^\/v1\/places\/[^/]+$/.test(target);
       if (!allowed) return json({error: "not_found"}, 404);
       if (request.method !== "GET") return json({error: "method_not_allowed"}, 405);
@@ -92,20 +94,29 @@ export default {
 
     if (request.method === "GET" && path === "/sources") {
       const ans=await ansState(env.DB);const ansSnapshot=(ans.body as any).snapshot;
+      const plans=await plansState(env.DB);const plansSnapshot=(plans.body as any).snapshot;
       return json({
         sources: [
           { id: "cnes", name: "Cadastro Nacional de Estabelecimentos de Saúde", url: "https://dadosabertos.saude.gov.br/dataset/cnes-cadastro-nacional-de-estabelecimentos-de-saude", integration_status: "partial", scope: "Carga manual e limitada de estabelecimentos; cobertura nacional e atualização automática ainda não implementadas." },
           { id: "cnes-services", name: "CNES – Serviços especializados de reabilitação", url: rehabilitationCatalog.source_url, integration_status: "partial", scope: "Observações mensais do serviço 135; atendimento específico a TEA não verificado." },
           { id: "autism-support", name: "Atendimento a TEA documentado em fontes oficiais", url: "https://www.curitiba.pr.gov.br/noticias/prefeito-lanca-programa-para-quadruplicar-atendimento-a-criancas-autistas-ate-o-fim-do-ano/82418", integration_status: "partial", scope: "Curadoria manual com fonte, público, datas e prazo de revisão; não confirma vagas nem cobertura completa." },
           { id: "ans", name: "Agência Nacional de Saúde Suplementar", url: "https://www.gov.br/ans/pt-br/acesso-a-informacao/perfil-do-setor/dados-abertos-1", integration_status: ansSnapshot ? "partial" : "mapping_pending",
-            operators_ready: !!ansSnapshot, active_source_date: ansSnapshot?.active_source_date ?? null, cancelled_source_date: ansSnapshot?.cancelled_source_date ?? null,
-            scope: ansSnapshot ? "Operadoras ativas e canceladas conforme arquivos importados; município/UF são da sede. Planos e rede credenciada ainda não integrados." : "Aguardando a primeira carga completa de operadoras ANS; planos e rede credenciada pendentes." }
+            operators_ready: !!ansSnapshot, plans_ready: !!plansSnapshot, plans_source_date: plansSnapshot?.source_date ?? null, plans_count: plansSnapshot?.record_count ?? null, active_source_date: ansSnapshot?.active_source_date ?? null, cancelled_source_date: ansSnapshot?.cancelled_source_date ?? null,
+            scope: plansSnapshot ? "Operadoras e características cadastrais nacionais de planos conforme arquivos ANS importados. A sede não é cobertura; rede credenciada e municípios de abrangência não integrados." : ansSnapshot ? "Operadoras ativas e canceladas conforme arquivos importados; município/UF são da sede. Planos aguardam carga nacional validada; rede credenciada não integrada." : "Aguardando a primeira carga completa de operadoras ANS; planos e rede credenciada pendentes." }
         ]
       });
     }
 
     if (path.startsWith("/admin/")) {
       if (!authorized(request, env)) return json({ error: "unauthorized", message: "Token administrativo ausente ou inválido." }, 401);
+      if (request.method === "GET" && path === "/admin/ans/plans/state") {const result=await plansState(env.DB);return json(result.body,result.status);}
+      const planAction=path.match(/^\/admin\/ans\/plans\/(begin|chunk|commit)$/);
+      if (request.method === "POST" && planAction) {
+        const configured=env.ANS_PLANS_DAILY_RECORD_LIMIT??'';
+        const dailyLimit=/^\d+$/.test(configured) && Number(configured)>=250 && Number(configured)<=250000 ? Number(configured) : 15000;
+        const result=await importAnsPlans(request,env.DB,planAction[1],dailyLimit);
+        return json(result.body,result.status);
+      }
       if (request.method === "GET" && path === "/admin/ans/operators/state") {const result=await ansState(env.DB);return json(result.body,result.status);}
       if (request.method === "POST" && path === "/admin/ans/operators/snapshot") {const result=await importAnsOperators(request,env.DB);return json(result.body,result.status);}
       if (request.method === "POST" && path === "/admin/import") {
@@ -157,13 +168,7 @@ export default {
     }
 
     if (request.method === "GET" && path === "/v1/plans") {
-      const page = pagination(url.searchParams);
-      if (!page) return json({error: "invalid_pagination", message: "Use limit inteiro de 1 a 100 e offset inteiro não negativo, sem repetir parâmetros."}, 400);
-      const q = (url.searchParams.get("q") ?? "").trim();
-      return json(await readPage(env.DB,
-        "SELECT p.id, p.name, p.registration_code, p.status, o.name AS operator_name FROM products p LEFT JOIN operators o ON o.id = p.operator_id WHERE p.name LIKE ?",
-        "SELECT COUNT(*) AS total FROM products p WHERE p.name LIKE ?", " ORDER BY p.name, p.id", [`%${q}%`], page,
-        "A presença de um produto não comprova rede credenciada atual."));
+      const result=await listAnsPlans(url.searchParams,env.DB);return json(result.body,result.status);
     }
 
     return json({ error: "not_found", path }, 404);

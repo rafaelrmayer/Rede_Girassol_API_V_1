@@ -171,6 +171,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
           <button type="button" data-view="autism"><span class="nav-icon" aria-hidden="true">☀</span>Autismo e apoio</button>
           <button type="button" data-view="rehabilitation"><span class="nav-icon" aria-hidden="true">◎</span>Reabilitação</button>
           <button type="button" data-view="operators" id="operatorsNav" hidden><span class="nav-icon" aria-hidden="true">▦</span>Operadoras ANS</button>
+          <button type="button" data-view="plans" id="plansNav" hidden><span class="nav-icon" aria-hidden="true">▤</span>Planos ANS</button>
           <button type="button" data-view="sources"><span class="nav-icon" aria-hidden="true">◎</span>Fontes e transparência</button>
         </nav>
       </div>
@@ -273,6 +274,19 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
         <div class="panel table-panel"><div class="table-meta"><span id="operatorsMeta">Aguardando consulta</span><span>Fonte: ANS — CADOP</span></div><div id="operatorsResults" aria-live="polite"></div><nav class="pager" aria-label="Paginação de operadoras"><button class="refresh" type="button" id="operatorsPrevious" disabled>Anterior</button><span id="operatorsPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="operatorsNext" disabled>Próxima</button></nav></div>
       </section>
 
+      <section class="view" id="plansView" aria-labelledby="viewTitle">
+        <p class="intro">Consulte características cadastrais nacionais de planos e a operadora vinculada pelo registro ANS. Plano ativo não garante comercialização, atendimento a TEA, vaga ou cobertura de um procedimento. Esta consulta não inclui municípios de abrangência nem rede credenciada.</p>
+        <p id="plansReference" class="panel-copy">Data do conjunto: consulte Fontes e transparência.</p>
+        <form id="plansForm" class="toolbar">
+          <label class="search-wrap"><span class="sr-only">Nome do plano</span><input type="search" id="plansQuery" placeholder="Nome do plano" autocomplete="off"></label>
+          <label class="search-wrap"><span class="sr-only">Registro ANS da operadora</span><input id="plansOperator" maxlength="6" placeholder="Registro da operadora (6 dígitos)" inputmode="numeric" autocomplete="off"></label>
+          <label class="search-wrap"><span class="sr-only">Código de registro do plano</span><input id="plansRegistration" maxlength="30" placeholder="Código do plano (exato)" autocomplete="off"></label>
+          <label class="search-wrap"><span class="sr-only">Situação cadastral do plano</span><select id="plansStatus"><option value="">Todas as situações</option><option value="active">Ativo na fonte</option><option value="suspended">Suspenso</option><option value="cancelled">Cancelado</option><option value="transferred">Transferido</option></select></label>
+          <button type="submit" class="search-btn">Pesquisar</button>
+        </form>
+        <div class="panel table-panel"><div class="table-meta"><span id="plansMeta">Aguardando consulta</span><span>Fonte: ANS — características dos produtos</span></div><div id="plansResults" aria-live="polite"></div><nav class="pager" aria-label="Paginação de planos"><button class="refresh" type="button" id="plansPrevious" disabled>Anterior</button><span id="plansPage" role="status" aria-live="polite">Aguardando consulta</span><button class="refresh" type="button" id="plansNext" disabled>Próxima</button></nav></div>
+      </section>
+
       <section class="view" id="sourcesView" aria-labelledby="viewTitle">
         <p class="intro">A Rede Girassol pretende utilizar fontes oficiais e manter origem, data de referência e limites de cada conjunto de dados. A integração só será tratada como concluída depois de implementada e validada.</p>
         <div class="source-grid" id="allSources"><div class="panel"><p class="panel-copy">Consultando as fontes documentadas…</p></div></div>
@@ -297,9 +311,10 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       autism: "Autismo e apoio",
       rehabilitation: "Serviços de reabilitação",
       operators: "Operadoras ANS",
+      plans: "Planos ANS",
       sources: "Fontes e transparência"
     };
-    const views = ["guide", "overview", "places", "autism", "rehabilitation", "operators", "sources"];
+    const views = ["guide", "overview", "places", "autism", "rehabilitation", "operators", "plans", "sources"];
     const state = { sources: [], summary: {} };
     const byId = function (id) { return document.getElementById(id); };
 
@@ -490,6 +505,14 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     }
     const pageSize = 20;
     const collections = {
+      plans: {endpoint:"/v1/plans",emptyTitle:"Nenhum plano correspondente aos filtros",columns:[
+        {label:"Plano",value:"name",primary:true},{label:"Código do plano",value:"registration_code"},{label:"ID do plano na ANS",value:"plan_id"},
+        {label:"Operadora",value:"operator_name"},{label:"Registro da operadora",value:"ans_code"},
+        {label:"Situação na fonte",value:function(r){return {active:"Ativo",suspended:"Suspenso",cancelled:"Cancelado",transferred:"Transferido"}[r.status] || r.status;}},
+        {label:"Contratação",value:"contracting_type"},{label:"Segmentação",value:"segmentation"},{label:"Abrangência (categoria)",value:"coverage_scope"},
+        {label:"Acomodação",value:"accommodation"},{label:"Fator moderador",value:"cost_sharing"},{label:"Situação desde",value:"status_changed_on"},
+        {label:"Data do conjunto",value:"source_updated_at"},{label:"Fonte",value:function(){return "Arquivo oficial ↗";},link:function(r){return r.source_url;}}
+      ]},
       operators: {endpoint:"/v1/operators",emptyTitle:"Nenhuma operadora correspondente aos filtros",columns:[
         {label:"Razão social",value:"name",primary:true},{label:"Registro ANS",value:"ans_code"},{label:"Nome fantasia",value:"trade_name"},
         {label:"Modalidade",value:"modality"},{label:"Sede",value:function(r){return [r.city,r.state].filter(Boolean).join(" / ");}},
@@ -591,8 +614,11 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     function updateAnsAvailability() {
       const ans=state.sources.find(function(source){return source.id === "ans";});
       byId("operatorsNav").hidden=!(ans && ans.operators_ready);
+      byId("plansNav").hidden=!(ans && ans.plans_ready);
+      if(ans && ans.plans_ready) setText("plansReference","Conjunto atualizado pela ANS em " + ans.plans_source_date + ". Catálogo nacional; os dados não confirmam rede credenciada ou oferta atual.");
       if(ans && ans.operators_ready) setText("operatorsReference","Arquivos consultados: ativas " + ans.active_source_date + "; canceladas " + ans.cancelled_source_date + ". Datas dos arquivos, não atualização individual de cada operadora.");
     }
+    function loadPlans() {return loadCollection("plans",{q:byId("plansQuery").value.trim(),ans_code:byId("plansOperator").value.trim(),registration_code:byId("plansRegistration").value.trim(),status:byId("plansStatus").value},0);}
     function loadOperators() {return loadCollection("operators",{q:byId("operatorsQuery").value.trim(),city:byId("operatorsCity").value.trim(),state:byId("operatorsState").value.trim(),status:byId("operatorsStatus").value},0);}
     async function refreshOverview() {
       showApiStatus(false, "Consultando API…");
@@ -679,6 +705,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       if (view === "autism") loadAutism();
       if (view === "rehabilitation") loadRehabilitation();
       if (view === "operators") loadOperators();
+      if (view === "plans") loadPlans();
       if (view === "sources") api("/sources").then(function (data) {
         state.sources = Array.isArray(data.sources) ? data.sources : [];
         updateAnsAvailability();
@@ -695,6 +722,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       loadPlaces({ q: byId("placesQuery").value.trim(), city: byId("placesCity").value.trim(), state: byId("placesState").value.trim() });
     });
     byId("autismForm").addEventListener("submit", function (event) {event.preventDefault(); loadAutism();});
+    byId("plansForm").addEventListener("submit",function(event){event.preventDefault();loadPlans();});
     byId("operatorsForm").addEventListener("submit",function(event){event.preventDefault();loadOperators();});
     byId("rehabilitationForm").addEventListener("submit", function (event) { event.preventDefault(); loadRehabilitation(); });
     byId("refreshAll").addEventListener("click", async function () {
@@ -704,6 +732,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       if (active && active.id === "autismView") loadAutism();
       if (active && active.id === "rehabilitationView") loadRehabilitation();
       if (active && active.id === "operatorsView") loadOperators();
+      if (active && active.id === "plansView") loadPlans();
     });
     refreshOverview();
   </script>
