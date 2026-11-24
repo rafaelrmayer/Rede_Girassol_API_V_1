@@ -319,8 +319,8 @@
         "tags": [
           "Operadoras"
         ],
-        "summary": "Pesquisar operadoras presentes no banco",
-        "description": "A integração ANS ainda não foi implementada. A rota pode retornar uma lista vazia. Registros presentes não confirmam situação cadastral na ANS.",
+        "summary": "Pesquisar operadoras ANS importadas",
+        "description": "Consulta a última carga validada dos arquivos ANS de operadoras ativas e canceladas. status active/cancelled reflete o arquivo; not_in_latest_source é ausência, não cancelamento inferido. Cidade/UF são da sede, não cobertura. source_updated_at é Last-Modified do arquivo de origem, não uma alteração individual. Não associa prestadores a planos.",
         "parameters": [
           {
             "name": "q",
@@ -337,6 +337,49 @@
           },
           {
             "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "description": "Nome parcial do município da sede, não área de cobertura.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "UF da sede; comparação em maiúsculas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Situação conforme carga: não encontrada não equivale a cancelada.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "cancelled",
+                "not_in_latest_source",
+                "unconfirmed"
+              ]
+            }
+          },
+          {
+            "name": "ans_code",
+            "in": "query",
+            "required": false,
+            "description": "Registro ANS como texto de seis dígitos.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{6}$"
+            }
           }
         ],
         "responses": {
@@ -366,13 +409,52 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/InvalidPagination"
+            "description": "Paginação, filtros inválidos ou repetidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           },
           "403": {
             "$ref": "#/components/responses/EdgeBlocked"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "description": "Catálogo ANS não configurado para os novos filtros.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -827,6 +909,17 @@
           "scope": {
             "type": "string",
             "description": "Limites conhecidos da integração, quando disponíveis."
+          },
+          "operators_ready": {
+            "type": "boolean"
+          },
+          "active_source_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelled_source_date": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -986,7 +1079,44 @@
           "source_updated_at": {
             "type": "string",
             "nullable": true,
-            "format": "date"
+            "format": "date",
+            "description": "Data UTC do Last-Modified do arquivo ANS para registros gerenciados pelo importador; não data de edição individual."
+          },
+          "trade_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "modality": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "registered_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelled_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellation_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "source_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "snapshot_id": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [

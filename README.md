@@ -20,6 +20,7 @@ O painel oferece uma interface para as pessoas; a API permite que desenvolvedore
 | Reabilitação | Observações mensais do serviço CNES 135, com modalidade, competência e tipo próprio/terceiro. |
 | Contatos institucionais | Telefones com botão para ligar, e-mail/site quando conferidos, fonte e data de revisão. |
 | Encontre apoio · Experimental | Quatro orientações sobre acesso ao SUS, crianças/adolescentes, adultos e cuidadores, com resumos e passos. |
+| Operadoras ANS | Consulta de cadastros ativos/cancelados após a primeira carga completa validada; filtros de sede e situação. |
 | API para desenvolvedores | Respostas JSON, filtros, paginação, OpenAPI e documentação interativa. |
 | Importação controlada | Scripts Python e GitHub Actions para preparar, validar, importar e conferir cargas CNES, com histórico. |
 
@@ -56,6 +57,7 @@ https://rede-girassol-api-v-1.rafael10mayer.workers.dev
 | GET | `/v1/places/{place_id}` | Detalhe por ID interno ou CNES de sete dígitos. |
 | GET | `/v1/autism-support` | Curadoria documental de atendimento a TEA; filtros `q`, `city`, `state`. |
 | GET | `/v1/rehabilitation` | Observações de reabilitação por nome, local, classificação, CNES, tipo e competência. |
+| GET | `/v1/operators` | Operadoras ANS; filtros por razão social, sede, situação e registro ANS, após a carga validada. |
 | GET | `/v1/support-guide` | Corpus de orientações revisadas; sem parâmetros ou perguntas. |
 
 Exemplos:
@@ -67,9 +69,9 @@ GET /v1/autism-support?city=Curitiba&limit=10
 GET /v1/rehabilitation?classification_code=002&reference_month=202607&limit=2&offset=2
 ```
 
-As quatro listas aceitam `limit` de 1 a 100 (padrão 100) e `offset` como quantidade de registros a pular. Retornam `results`, `count`, `total` e `pagination`, com `has_more` e `next_offset`. Detalhes, erros e demais filtros estão no [guia da API](docs/API.md).
+As cinco listas aceitam `limit` de 1 a 100 (padrão 100) e `offset` como quantidade de registros a pular. Retornam `results`, `count`, `total` e `pagination`, com `has_more` e `next_offset`. Detalhes, erros e demais filtros estão no [guia da API](docs/API.md).
 
-As rotas `/v1/operators` e `/v1/plans` permanecem na API canônica para compatibilidade, mas **não possuem carga ANS nesta etapa**. Seus menus foram retirados do painel e elas não integram o pacote de sete consultas do piloto RapidAPI. As rotas administrativas `POST /admin/import` e `GET /admin/imports` exigem token próprio e não são oferecidas no marketplace.
+A rota `/v1/plans` permanece na API canônica para compatibilidade, mas não possui carga nesta etapa e seu menu continua fora do painel. Operadoras ANS têm preparador e importador de snapshot completo; o menu só aparece após uma primeira carga confirmada. Veja o [guia ANS](docs/ANS_OPERATORS.md). As rotas administrativas exigem token próprio e não são oferecidas no marketplace.
 
 ## RapidAPI: integração testada, listagem privada
 
@@ -87,7 +89,7 @@ A plataforma apresenta uma **Bandwidth Platform Fee** separada: franquia de 10.2
 
 A origem pública que atende o painel continua acessível. A proteção do namespace de integração não torna os dados exclusivos do RapidAPI e as cotas do gateway não são limites globais da infraestrutura.
 
-Veja o [roteiro RapidAPI](docs/RAPIDAPI.md), a [definição de sete consultas](rapidapi.openapi.json) e a [revisão documental das fontes](docs/SOURCE_REUSE_REVIEW.md).
+Veja o [roteiro RapidAPI](docs/RAPIDAPI.md), a [definição atualizada de oito consultas](rapidapi.openapi.json) e a [revisão documental das fontes](docs/SOURCE_REUSE_REVIEW.md).
 
 ## Fontes, datas e limites
 
@@ -95,7 +97,7 @@ Veja o [roteiro RapidAPI](docs/RAPIDAPI.md), a [definição de sete consultas](r
 - **IBGE:** conferência do nome do município e correspondência com UF nos preparadores.
 - **Prefeitura de Curitiba:** informações explícitas de atendimento e orientações de acesso.
 - **Páginas institucionais e CNES:** contatos com procedência individual.
-- **ANS:** integração planejada, ainda sem dados importados.
+- **ANS:** integração de operadoras ativas/canceladas implementada, com primeira carga remota a validar pelo workflow. Produtos/planos e rede credenciada ainda pendentes.
 
 A curadoria de autismo é independente da classificação de reabilitação. **Reabilitação intelectual não confirma atendimento a TEA**, assim como cadastro CNES não comprova vínculo com plano de saúde ou habilitação como CER. A competência histórica não significa oferta atual, e `imported_at` não substitui a data da fonte.
 
@@ -105,6 +107,7 @@ Resumos, contatos e evidências de atendimento possuem revisão com prazo; itens
 
 | Guia | Conteúdo |
 |---|---|
+| [Operadoras ANS](docs/ANS_OPERATORS.md) | Primeira carga completa, migração, diferenças entre fontes e atualização mensal preparada. |
 | [API](docs/API.md) | Contratos públicos, filtros, paginação e erros. |
 | [Reabilitação e autismo](docs/REHABILITATION.md) | Fontes, classificação, curadoria, migração e carga mensal histórica. |
 | [Contatos](docs/CONTACTS.md) | Canais institucionais, origem, contexto e prazo de revisão. |
@@ -156,12 +159,12 @@ A verificação automática do repositório executa testes TypeScript, Python, c
 ## Próximas etapas
 
 1. Concluir a revisão documental e a publicação no RapidAPI.
-2. Integrar cadastros de operadoras da ANS e depois produtos/planos, com fonte, situação e data.
-3. Preparar a integração ANS para atualizações mensais: validar arquivos, comparar inclusões/alterações/inativações, preservar a base anterior em caso de erro e registrar histórico.
+2. Validar a primeira carga de operadoras ANS no ambiente remoto e depois integrar produtos/planos, com fonte, situação e data.
+3. Após a validação manual, habilitar a rotina mensal de operadoras ANS: validar arquivos, comparar inclusões/alterações/inativações, preservar a base anterior em caso de erro e registrar histórico.
 4. Validar primeiro a carga manual; **só depois ativar o agendamento mensal**.
 5. Manter revisão periódica de contatos e atendimento, priorizando informação útil em vez de ampliar o escopo sem necessidade.
 
-A automatização ANS ainda não está implementada ou agendada. A associação entre estabelecimento e rede de um plano exigirá fonte específica adicional.
+O processo mensal de operadoras ANS está preparado no workflow, mas o cron continua comentado e a ativação depende da validação manual. A associação entre estabelecimento e rede de um plano exigirá fonte específica adicional.
 
 ## Autor e licença
 

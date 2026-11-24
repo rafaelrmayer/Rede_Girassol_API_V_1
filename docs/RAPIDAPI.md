@@ -2,7 +2,7 @@
 
 ## Pacote preparado
 
-Use [rapidapi.openapi.json](../rapidapi.openapi.json) para importar a definição do **piloto de consultas**. Ele contém sete operações GET: saúde do serviço, fontes, lista/detalhe de estabelecimentos, Autismo e apoio, reabilitação e orientações de acesso. Não inclui rotas administrativas nem as duas consultas ANS ainda sem carga.
+Use [rapidapi.openapi.json](../rapidapi.openapi.json) para importar a definição do **piloto de consultas**. Ele contém oito operações GET: saúde do serviço, fontes, lista/detalhe de estabelecimentos, Autismo e apoio, reabilitação, orientações de acesso e operadoras ANS. Não inclui rotas administrativas nem a consulta de planos ainda sem carga.
 
 A definição canônica [openapi.json](../openapi.json) continua com nove operações para compatibilidade da API existente. Para atualizar o pacote após mudanças na definição canônica:
 
@@ -18,7 +18,7 @@ O gerador remove as rotas pendentes e os componentes que deixam de ser referenci
 
 **Descrição curta:** Consulta a dados públicos de estabelecimentos de saúde, reabilitação e apoio a pessoas autistas, com fontes, datas e contatos institucionais publicados.
 
-**Descrição detalhada:** Projeto independente em desenvolvimento. Organiza cadastros CNES importados e limitados, observações mensais de reabilitação e curadoria documental de atendimento a TEA. A cobertura inicial é parcial, com dados de Curitiba/PR. Contatos publicados não comprovam linha ativa ou agendamento. Atendimento documentado não significa vaga disponível ou cobertura por plano. Reabilitação intelectual não confirma, sozinha, atendimento a pessoas autistas. O módulo Encontre apoio oferece resumos revisados, sem geração por IA. Operadoras, produtos ANS e rede credenciada não integram este piloto.
+**Descrição detalhada:** Projeto independente em desenvolvimento. Organiza cadastros CNES importados e limitados, observações mensais de reabilitação e curadoria documental de atendimento a TEA. A cobertura inicial é parcial, com dados de Curitiba/PR. Contatos publicados não comprovam linha ativa ou agendamento. Atendimento documentado não significa vaga disponível ou cobertura por plano. Reabilitação intelectual não confirma, sozinha, atendimento a pessoas autistas. O módulo Encontre apoio oferece resumos revisados, sem geração por IA. Operadoras ANS dependem da primeira carga completa validada. Produtos/planos ANS e rede credenciada ainda não integram este piloto.
 
 **Origem técnica atual:** `https://rede-girassol-api-v-1.rafael10mayer.workers.dev`
 
@@ -27,7 +27,7 @@ Não anunciar cobertura nacional, busca semântica, diagnóstico, vagas ou rede 
 ## Configuração no navegador
 
 1. Entrar no RapidAPI Studio e criar uma API inicialmente privada/rascunho.
-2. Importar o arquivo `rapidapi.openapi.json` (baixar o arquivo bruto do GitHub após merge) e conferir as sete operações.
+2. Importar o arquivo `rapidapi.openapi.json` (baixar o arquivo bruto do GitHub após merge) e conferir as oito operações.
 3. Conferir o endereço de origem nas configurações do gateway; os caminhos devem ser preservados.
 4. Testar `/health`, `/v1/places?state=PR&city=Curitiba&limit=2`, `/v1/autism-support?city=Curitiba`, `/v1/rehabilitation?reference_month=202607&limit=2` e `/v1/support-guide` pelo playground. Comparar corpo e status com a documentação; os totais dependem das cargas e dos prazos de revisão.
 5. Definir modalidade de acesso e limites no RapidAPI antes de tornar a listagem pública. Não há plano pago, preço ou cota escolhidos por este pacote.
@@ -36,7 +36,7 @@ Os nomes das opções podem variar na interface. Nenhuma conta RapidAPI foi aces
 
 ## Acesso separado com Proxy Secret
 
-O Worker oferece as sete consultas do piloto também sob `/rapidapi`, exigindo o cabeçalho que o próprio gateway adiciona. As rotas públicas antigas e o painel continuam acessíveis. O namespace não expõe importação, administração, documentação ou rotas ANS.
+O Worker oferece as oito consultas do piloto também sob `/rapidapi`, exigindo o cabeçalho que o próprio gateway adiciona. As rotas públicas antigas e o painel continuam acessíveis. O namespace não expõe importação, administração, documentação ou a rota de planos.
 
 Após merge/deploy:
 
@@ -70,4 +70,8 @@ A revisão inicial encontrou avisos de licença no portal e orientação geral s
 
 ## Sequência para a ANS
 
-Após o piloto: verificar arquivos/dicionários e licença oficiais de operadoras; implementar preparação, importação idempotente, fonte/data e testes; validar os registros em produção. Em seguida fazer o mesmo para produtos/planos e seus vínculos com operadoras. Só reativar as telas quando houver dados reais consultáveis e informação útil. Cadastro de estabelecimento, operadora ou produto não basta para afirmar vínculo de rede credenciada: esse relacionamento exige uma fonte adicional específica.
+A preparação, importação atômica e testes de operadoras estão implementados; falta validar a primeira carga no ambiente remoto. Depois seguir para produtos/planos e seus vínculos com operadoras. Só reativar as telas quando houver dados reais consultáveis e informação útil. Cadastro de estabelecimento, operadora ou produto não basta para afirmar vínculo de rede credenciada: esse relacionamento exige uma fonte adicional específica.
+
+## Adicionar operadoras após a carga validada
+
+A definição atualizada inclui `/v1/operators` e seus filtros (oito consultas no total). Ela não foi reimportada na conta RapidAPI por esta alteração. Primeiro executar e conferir a carga descrita em [ANS_OPERATORS.md](ANS_OPERATORS.md); depois adicionar/importar a operação na listagem, preservando Base URL com `/rapidapi`, Proxy Secret e plano já configurados. A importação no marketplace e a visibilidade continuam ações separadas. O menu de planos permanece ausente.

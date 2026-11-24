@@ -25,8 +25,8 @@ URL base: `https://rede-girassol-api-v-1.rafael10mayer.workers.dev`
 | `GET /v1/places/{place_id}` | ID interno ou CNES de sete dígitos, preservando zeros iniciais |
 | `GET /v1/autism-support` | `q`, `city`, `state`, `limit`, `offset`; fontes explícitas revisadas de atendimento a TEA |
 | `GET /v1/rehabilitation` | `q`, `city`, `state`, `classification_code`, `reference_month` (AAAAMM), `cnes_code`, `service_type`, `limit`, `offset` |
-| `GET /v1/operators` | `q`, `limit`, `offset`; integração ANS pendente |
-| `GET /v1/plans` | `q`, `limit`, `offset`; integração ANS pendente |
+| `GET /v1/operators` | `q`, `city`, `state`, `status`, `ans_code`, `limit`, `offset`; sede e situação conforme arquivos ANS importados |
+| `GET /v1/plans` | `q`, `city`, `state`, `status`, `ans_code`, `limit`, `offset`; sede e situação conforme arquivos ANS importados |
 
 `q` e `city` fazem pesquisa parcial com a semântica LIKE do SQLite, na qual `%` e `_` são curingas. `state` remove espaços externos e converte o valor para maiúsculas antes da comparação. Os limites de paginação são descritos na definição; formatos inválidos de UF ou filtros sem correspondência retornam lista vazia.
 
@@ -91,3 +91,7 @@ O [piloto de busca documental](SUPPORT_GUIDE.md) fornece resumos editoriais revi
 ## Contatos institucionais
 
 As listas `/v1/places`, `/v1/autism-support`, `/v1/rehabilitation` e o detalhe de estabelecimento incluem `contact`, com telefones, e-mail/site quando conhecidos, origem, datas e limitações. `published` representa contato publicado conferido documentalmente; não confirma linha ativa ou agendamento. Sem fonte vigente, retorna `not_verified` e canais vazios. Veja o [guia de contatos](CONTACTS.md).
+
+## Operadoras ANS
+
+O [guia de carga ANS](ANS_OPERATORS.md) descreve os arquivos ativos/cancelados e a validação antes de publicar. A consulta conserva os campos existentes e acrescenta nome fantasia, modalidade, sede, datas de registro/cancelamento, motivo, fonte e snapshot quando disponíveis. `source_updated_at` é a data UTC do arquivo, não de edição individual. Ausência vira `not_in_latest_source`, não cancelamento inferido. Produtos/planos e rede credenciada continuam pendentes.
